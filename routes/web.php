@@ -15,6 +15,10 @@ Route::view('profile', 'profile')
 use App\Http\Controllers\DeviceController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Exports (must be before resource to avoid route conflict)
+    Route::get('export/devices/excel', [DeviceController::class , 'exportExcel'])->name('devices.export.excel');
+    Route::get('export/devices/pdf', [DeviceController::class , 'exportPdf'])->name('devices.export.pdf');
+
     Route::resource('devices', DeviceController::class);
     Route::get('devices/{device}/print-qr', [DeviceController::class , 'printQr'])->name('devices.print-qr');
 
@@ -22,10 +26,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('devices/{device}/documents', [\App\Http\Controllers\DeviceDocumentController::class , 'store'])->name('device.documents.store');
     Route::get('documents/{document}/download', [\App\Http\Controllers\DeviceDocumentController::class , 'download'])->name('device.documents.download');
     Route::delete('documents/{document}', [\App\Http\Controllers\DeviceDocumentController::class , 'destroy'])->name('device.documents.destroy');
-
-    // Exports
-    Route::get('devices-export/excel', [DeviceController::class , 'exportExcel'])->name('devices.export.excel');
-    Route::get('devices-export/pdf', [DeviceController::class , 'exportPdf'])->name('devices.export.pdf');
 });
 
 Route::middleware(['auth', 'verified', 'is_admin'])->group(function () {
