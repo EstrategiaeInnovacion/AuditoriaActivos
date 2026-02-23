@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <form method="POST" action="{{ route('devices.update', $device) }}">
+                    <form method="POST" action="{{ route('devices.update', $device) }}" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -103,7 +103,7 @@
                             <!-- Password -->
                             <div>
                                 <x-input-label for="password" :value="__('Contraseña del Equipo')" />
-                                <x-text-input id="password" class="block mt-1 w-full" type="text" name="password" :value="old('password', $device->credential->password ?? '')" />
+                                <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" :value="old('password', $device->credential->password ?? '')" />
                                 <x-input-error :messages="$errors->get('password')" class="mt-2" />
                             </div>
 
@@ -117,8 +117,36 @@
                             <!-- Email Password -->
                             <div>
                                 <x-input-label for="email_password" :value="__('Contraseña del Correo')" />
-                                <x-text-input id="email_password" class="block mt-1 w-full" type="text" name="email_password" :value="old('email_password', $device->credential->email_password ?? '')" />
+                                <x-text-input id="email_password" class="block mt-1 w-full" type="password" name="email_password" :value="old('email_password', $device->credential->email_password ?? '')" />
                                 <x-input-error :messages="$errors->get('email_password')" class="mt-2" />
+                            </div>
+                        </div>
+
+                        <hr class="my-6 border-gray-300">
+
+                        <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Fotos del Equipo</h3>
+                        <div x-data="{ previews: [] }" class="space-y-4">
+                            @if($device->photos->count())
+                                <div class="grid grid-cols-4 gap-3">
+                                    @foreach($device->photos as $photo)
+                                        <label class="relative group cursor-pointer">
+                                            <input type="checkbox" name="delete_photos[]" value="{{ $photo->id }}" class="absolute top-1 right-1 z-10 rounded border-red-400 text-red-500 focus:ring-red-400 opacity-0 group-hover:opacity-100 transition">
+                                            <img src="{{ Storage::disk('private')->url($photo->file_path) }}" alt="Foto" class="w-full h-24 object-cover rounded-lg border border-slate-200 group-hover:border-red-300 transition">
+                                            <span class="absolute bottom-1 left-1 text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition">Marcar para eliminar</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <p class="text-xs text-slate-400">Marca las fotos que quieras eliminar.</p>
+                            @endif
+                            <div>
+                                <label class="text-sm text-slate-600 font-medium">Agregar más fotos:</label>
+                                <input type="file" name="photos[]" multiple accept="image/*" class="mt-1 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                    @change="previews = [...$event.target.files].map(f => URL.createObjectURL(f))">
+                                <div x-show="previews.length" class="grid grid-cols-4 gap-3 mt-3">
+                                    <template x-for="(src, i) in previews" :key="i">
+                                        <img :src="src" class="w-full h-24 object-cover rounded-lg border border-slate-200">
+                                    </template>
+                                </div>
                             </div>
                         </div>
 

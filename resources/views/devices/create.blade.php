@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <form method="POST" action="{{ route('devices.store') }}">
+                    <form method="POST" action="{{ route('devices.store') }}" enctype="multipart/form-data">
                         @csrf
 
                         <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Información General</h3>
@@ -102,7 +102,7 @@
                             <!-- Password -->
                             <div>
                                 <x-input-label for="password" :value="__('Contraseña del Equipo')" />
-                                <x-text-input id="password" class="block mt-1 w-full" type="text" name="password" :value="old('password')" />
+                                <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" :value="old('password')" />
                                 <x-input-error :messages="$errors->get('password')" class="mt-2" />
                             </div>
 
@@ -116,8 +116,21 @@
                             <!-- Email Password -->
                             <div>
                                 <x-input-label for="email_password" :value="__('Contraseña del Correo')" />
-                                <x-text-input id="email_password" class="block mt-1 w-full" type="text" name="email_password" :value="old('email_password')" />
+                                <x-text-input id="email_password" class="block mt-1 w-full" type="password" name="email_password" :value="old('email_password')" />
                                 <x-input-error :messages="$errors->get('email_password')" class="mt-2" />
+                            </div>
+                        </div>
+
+                        <hr class="my-6 border-gray-300">
+
+                        <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Fotos del Equipo (Opcional)</h3>
+                        <div x-data="{ previews: [] }" class="space-y-4">
+                            <input type="file" name="photos[]" multiple accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                @change="previews = [...$event.target.files].map(f => URL.createObjectURL(f))">
+                            <div x-show="previews.length" class="grid grid-cols-4 gap-3">
+                                <template x-for="(src, i) in previews" :key="i">
+                                    <img :src="src" class="w-full h-24 object-cover rounded-lg border border-slate-200">
+                                </template>
                             </div>
                         </div>
 

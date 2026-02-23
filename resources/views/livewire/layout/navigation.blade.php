@@ -36,9 +36,11 @@ new class extends Component
                     <x-nav-link :href="route('devices.index')" :active="request()->routeIs('devices.*')" wire:navigate>
                         {{ __('Activos') }}
                     </x-nav-link>
+                    @if(auth()->user()->is_admin)
                     <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" wire:navigate>
                         {{ __('Usuarios') }}
                     </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -93,9 +95,11 @@ new class extends Component
             <x-responsive-nav-link :href="route('devices.index')" :active="request()->routeIs('devices.*')" wire:navigate class="text-white">
                 {{ __('Activos') }}
             </x-responsive-nav-link>
+            @if(auth()->user()->is_admin)
             <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" wire:navigate class="text-white">
                 {{ __('Usuarios') }}
             </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

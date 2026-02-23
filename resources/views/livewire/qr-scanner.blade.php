@@ -110,8 +110,8 @@
                                 Este equipo está marcado como averiado.
                              </div>
                         @else
-                            <button class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow hover:bg-green-700">
-                                Recibir Devolución (Pendiente)
+                            <button wire:click="returnDevice" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow hover:bg-green-700">
+                                Recibir Devolución
                             </button>
                         @endif
                         
@@ -133,7 +133,8 @@
         </div>
     @endif
 
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+
     <script>
         document.addEventListener('livewire:initialized', () => {
             let scanner = null;

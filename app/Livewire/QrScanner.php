@@ -68,22 +68,45 @@ class QrScanner extends Component
         ]);
 
         // 2. Creamos el registro en la tabla assignments
-        Assignment::create([
+        $assignment = Assignment::create([
             'user_id' => $this->selectedUser,
             'device_id' => $this->device->id,
-            'assigned_to' => User::find($this->selectedUser)->name, // Redundante pero guarda el nombre histórico
+            'assigned_to' => User::find($this->selectedUser)->name,
             'assigned_at' => now(),
             'notes' => $this->deliveryConditions . ($this->assignmentType === 'prestamo_temporal' ? " (Devolución esperada: {$this->expectedReturnDate})" : ''),
         ]);
 
         // 3. Actualizamos el estado del equipo físico
-        $newStatus = 'assigned'; // El modelo usa 'assigned'
-        $this->device->update(['status' => $newStatus]);
+        $this->device->update(['status' => 'assigned']);
+
+        // 4. Notificar al usuario asignado
+        $assignedUser = User::find($this->selectedUser);
+        if ($assignedUser) {
+            $assignment->load('device');
+            $assignedUser->notify(new \App\Notifications\DeviceAssigned($assignment));
+        }
 
         // 4. Reiniciamos la pantalla con mensaje de éxito
         $this->resetScanner();
         $this->message = "¡Equipo asignado correctamente!";
         // Forzamos a que el mensaje se quede visible un momento en la pantalla principal
+        $this->scannedCode = 'success_screen';
+    }
+
+    public function returnDevice()
+    {
+        if (!$this->device)
+            return;
+
+        $currentAssignment = $this->device->currentAssignment;
+        if ($currentAssignment) {
+            $currentAssignment->update(['returned_at' => now()]);
+        }
+
+        $this->device->update(['status' => 'available']);
+
+        $this->resetScanner();
+        $this->message = "¡Equipo devuelto correctamente!";
         $this->scannedCode = 'success_screen';
     }
 

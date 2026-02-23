@@ -33,6 +33,11 @@ class Device extends Model
         });
     }
 
+    public function getRouteKeyName()
+    {
+        return 'uuid';
+    }
+
     public function credential()
     {
         return $this->hasOne(Credential::class);
@@ -46,5 +51,15 @@ class Device extends Model
     public function currentAssignment()
     {
         return $this->hasOne(Assignment::class)->whereNull('returned_at')->latestOfMany();
+    }
+
+    public function photos()
+    {
+        return $this->hasMany(DevicePhoto::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(DeviceDocument::class);
     }
 }

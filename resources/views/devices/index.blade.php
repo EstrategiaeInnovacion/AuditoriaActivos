@@ -32,6 +32,46 @@
             @endif
 
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <!-- Search & Filters -->
+                <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                    <form method="GET" action="{{ route('devices.index') }}" class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex-1">
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar por nombre, serie o marca..." class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                        </div>
+                        <select name="type" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                            <option value="">Todos los tipos</option>
+                            <option value="computer" {{ request('type') == 'computer' ? 'selected' : '' }}>Computadora</option>
+                            <option value="printer" {{ request('type') == 'printer' ? 'selected' : '' }}>Impresora</option>
+                            <option value="other" {{ request('type') == 'other' ? 'selected' : '' }}>Otro</option>
+                        </select>
+                        <select name="status" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                            <option value="">Todos los estados</option>
+                            <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Disponible</option>
+                            <option value="assigned" {{ request('status') == 'assigned' ? 'selected' : '' }}>Asignado</option>
+                            <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Mantenimiento</option>
+                            <option value="broken" {{ request('status') == 'broken' ? 'selected' : '' }}>Averiado</option>
+                        </select>
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition">
+                            Buscar
+                        </button>
+                        @if(request()->hasAny(['search', 'type', 'status']))
+                            <a href="{{ route('devices.index') }}" class="px-4 py-2 bg-slate-200 text-slate-700 text-sm font-medium rounded-md hover:bg-slate-300 transition text-center">
+                                Limpiar
+                            </a>
+                        @endif
+                    </form>
+                    <div class="flex gap-2 mt-3 sm:mt-0">
+                        <a href="{{ route('devices.export.excel', request()->only('search', 'type', 'status')) }}" class="inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-medium rounded-md hover:bg-emerald-700 transition">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Excel
+                        </a>
+                        <a href="{{ route('devices.export.pdf', request()->only('search', 'type', 'status')) }}" class="inline-flex items-center px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            PDF
+                        </a>
+                    </div>
+                </div>
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-slate-100">
                         <thead class="bg-slate-50">
@@ -44,7 +84,7 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-slate-100">
-                            @foreach ($devices as $device)
+                            @forelse ($devices as $device)
                                 <tr class="hover:bg-slate-50 transition duration-150">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
@@ -105,7 +145,17 @@
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-6 py-12 text-center">
+                                        <div class="text-slate-400">
+                                            <svg class="mx-auto h-12 w-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                                            <p class="text-sm font-medium">No se encontraron dispositivos</p>
+                                            <p class="text-xs mt-1">Intenta con otros filtros o agrega un nuevo activo.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

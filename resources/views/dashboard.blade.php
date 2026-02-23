@@ -7,8 +7,53 @@
 
     <div class="py-12" x-data="{ showQrScanner: false }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-            
-            <!-- Metrics Grid -->
+
+            {{-- ===================== ALERTS SECTION ===================== --}}
+            @if($warrantyExpiring->count() || $overdueLoans->count())
+            <div class="space-y-4">
+                @if($warrantyExpiring->count())
+                <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl shadow-sm">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-amber-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-semibold text-amber-800">⚠️ Garantías por vencer (próximos 30 días)</h3>
+                            <div class="mt-2 space-y-1">
+                                @foreach($warrantyExpiring as $device)
+                                    <a href="{{ route('devices.show', $device) }}" class="block text-sm text-amber-700 hover:text-amber-900 hover:underline">
+                                        <strong>{{ $device->name }}</strong> — {{ $device->brand }} {{ $device->model }} · Vence: {{ $device->warranty_expiration }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @if($overdueLoans->count())
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-xl shadow-sm">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-semibold text-red-800">🔴 Préstamos vencidos (+30 días sin devolución)</h3>
+                            <div class="mt-2 space-y-1">
+                                @foreach($overdueLoans as $loan)
+                                    <a href="{{ route('devices.show', $loan->device) }}" class="block text-sm text-red-700 hover:text-red-900 hover:underline">
+                                        <strong>{{ $loan->device->name }}</strong> → {{ $loan->user ? $loan->user->name : $loan->assigned_to }} · Asignado: {{ $loan->assigned_at->format('d/m/Y') }} ({{ $loan->assigned_at->diffForHumans() }})
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+            </div>
+            @endif
+
+            {{-- ===================== METRICS GRID ===================== --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                 <!-- Total Assets -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center transition-transform hover:-translate-y-1 duration-300">
@@ -66,7 +111,7 @@
                 </div>
             </div>
 
-            <!-- Main Content Grid -->
+            {{-- ===================== MAIN CONTENT GRID ===================== --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Left Column: Recent Activity (2/3) -->
                 <div class="lg:col-span-2">
@@ -77,6 +122,25 @@
                 <div class="space-y-8">
                     <!-- Chart -->
                     <livewire:dashboard-chart />
+
+                    {{-- Monthly Trend --}}
+                    @if($monthlyTrend->count())
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">📈 Tendencia Mensual</h3>
+                        <div class="space-y-2">
+                            @php $maxTrend = $monthlyTrend->max() ?: 1; @endphp
+                            @foreach($monthlyTrend as $month => $count)
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs text-slate-500 w-16 font-mono">{{ $month }}</span>
+                                    <div class="flex-1 bg-slate-100 rounded-full h-3 overflow-hidden">
+                                        <div class="h-full bg-indigo-500 rounded-full transition-all duration-500" style="width: {{ ($count / $maxTrend) * 100 }}%"></div>
+                                    </div>
+                                    <span class="text-xs font-semibold text-slate-700 w-6 text-right">{{ $count }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
 
                     <!-- Quick Actions -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
@@ -112,7 +176,7 @@
                                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                         </div>
-                        
+
                         <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <livewire:qr-scanner />
                         </div>

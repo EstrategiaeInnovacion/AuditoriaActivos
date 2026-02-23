@@ -4,13 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\Device;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class DeviceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $devices = Device::latest()->paginate(10);
+        $devices = Device::query()
+            ->when($request->search, fn($q, $s) => $q->where(function ($q) use ($s) {
+            $q->where('name', 'like', "%{$s}%")
+                ->orWhere('serial_number', 'like', "%{$s}%")
+                ->orWhere('brand', 'like', "%{$s}%");
+        }
+        ))
+            ->when($request->type, fn($q, $t) => $q->where('type', $t))
+            ->when($request->status, fn($q, $s) => $q->where('status', $s))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
         return view('devices.index', compact('devices'));
     }
 
@@ -31,11 +44,11 @@ class DeviceController extends Controller
             'purchase_date' => 'nullable|date',
             'warranty_expiration' => 'nullable|date',
             'notes' => 'nullable|string',
-            // Credential validation
             'username' => 'nullable|string|max:255',
             'password' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'email_password' => 'nullable|string|max:255',
+            'photos.*' => 'nullable|image|max:5120',
         ]);
 
         $device = Device::create($validated);
@@ -49,12 +62,23 @@ class DeviceController extends Controller
             ]);
         }
 
-        return redirect()->route('devices.index')->with('success', 'Device created successfully.');
+        // Upload photos
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('device-photos/' . $device->id, 'private');
+                $device->photos()->create([
+                    'file_path' => $path,
+                    'uploaded_by' => auth()->id(),
+                ]);
+            }
+        }
+
+        return redirect()->route('devices.index')->with('success', 'Dispositivo creado exitosamente.');
     }
 
     public function show(Device $device)
     {
-        $device->load(['credential', 'assignments.user']);
+        $device->load(['credential', 'assignments.user', 'photos', 'documents']);
         return view('devices.show', compact('device'));
     }
 
@@ -76,11 +100,12 @@ class DeviceController extends Controller
             'purchase_date' => 'nullable|date',
             'warranty_expiration' => 'nullable|date',
             'notes' => 'nullable|string',
-            // Credential validation
             'username' => 'nullable|string|max:255',
             'password' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'email_password' => 'nullable|string|max:255',
+            'photos.*' => 'nullable|image|max:5120',
+            'delete_photos' => 'nullable|array',
         ]);
 
         $device->update($validated);
@@ -96,8 +121,31 @@ class DeviceController extends Controller
             ]
             );
         }
+        elseif ($device->credential) {
+            $device->credential()->delete();
+        }
 
-        return redirect()->route('devices.index')->with('success', 'Device updated successfully.');
+        // Delete selected photos
+        if ($request->filled('delete_photos')) {
+            $photosToDelete = $device->photos()->whereIn('id', $request->delete_photos)->get();
+            foreach ($photosToDelete as $photo) {
+                Storage::disk('private')->delete($photo->file_path);
+                $photo->delete();
+            }
+        }
+
+        // Upload new photos
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('device-photos/' . $device->id, 'private');
+                $device->photos()->create([
+                    'file_path' => $path,
+                    'uploaded_by' => auth()->id(),
+                ]);
+            }
+        }
+
+        return redirect()->route('devices.index')->with('success', 'Dispositivo actualizado exitosamente.');
     }
 
     public function destroy(Device $device)
@@ -110,5 +158,41 @@ class DeviceController extends Controller
     {
         $qrCode = QrCode::size(200)->generate(route('devices.show', $device->uuid));
         return view('devices.print-qr', compact('device', 'qrCode'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\DeviceExport($request->search, $request->type, $request->status),
+            'inventario-activos-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = Device::query();
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                    ->orWhere('serial_number', 'like', "%{$request->search}%")
+                    ->orWhere('brand', 'like', "%{$request->search}%");
+            });
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $devices = $query->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.devices-pdf', compact('devices'))
+            ->setPaper('letter', 'landscape');
+
+        return $pdf->download('inventario-activos-' . now()->format('Y-m-d') . '.pdf');
     }
 }
