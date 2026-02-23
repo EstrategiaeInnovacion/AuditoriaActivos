@@ -15,13 +15,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
+        // Crear administrador por defecto si no existe
+        User::updateOrCreate(
+        ['email' => 'admin@activos.local'],
+        [
             'name' => 'Administrador',
-            'email' => 'admin@activos.local',
-            'password' => 'password',
+            'password' => bcrypt('password'), // Asegúrate de crear un hash válido
             'is_admin' => true,
-        ]);
+        ]
+        );
     }
 }
