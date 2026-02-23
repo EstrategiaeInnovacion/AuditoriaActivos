@@ -7,8 +7,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-slate-900">
+            <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                <div class="p-8 text-slate-900">
                     <form method="POST" action="{{ route('users.store') }}">
                         @csrf
 
@@ -45,7 +45,7 @@
                             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
                         </div>
 
-                        <div class="flex items-center justify-end mt-4">
+                        <div class="flex items-center justify-end mt-8 pt-6 border-t border-slate-100">
                             <x-primary-button class="ml-4">
                                 {{ __('Crear Usuario') }}
                             </x-primary-button>

@@ -7,8 +7,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                <div class="p-8 text-slate-900">
                     <form method="POST" action="{{ route('devices.update', $device) }}" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
@@ -150,14 +150,14 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-end mt-6">
-                            <x-secondary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-device-deletion')" class="mr-3">
+                        <div class="flex items-center justify-end mt-8 pt-6 border-t border-slate-100 gap-4">
+                            <button type="button" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-device-deletion')" class="inline-flex items-center px-4 py-2 bg-white border border-red-200 rounded-lg justify-center font-semibold text-xs text-red-600 uppercase tracking-widest shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all">
                                 {{ __('Eliminar Dispositivo') }}
-                            </x-secondary-button>
+                            </button>
 
-                            <x-primary-button class="ml-4">
+                            <button type="submit" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 border border-transparent rounded-lg justify-center font-bold text-sm text-white uppercase tracking-widest hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/30 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all hover:scale-105">
                                 {{ __('Actualizar Dispositivo') }}
-                            </x-primary-button>
+                            </button>
                         </div>
                     </form>
 

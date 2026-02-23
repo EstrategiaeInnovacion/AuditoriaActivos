@@ -5,11 +5,11 @@
                 {{ $device->name }}
             </h2>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('devices.edit', $device) }}" class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-md transition">
+                <a href="{{ route('devices.edit', $device) }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-semibold rounded-lg shadow-md hover:from-amber-400 hover:to-amber-500 hover:shadow-lg transition-all hover:scale-105">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                     Editar
                 </a>
-                <a href="{{ route('devices.print-qr', $device) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium rounded-md transition">
+                <a href="{{ route('devices.print-qr', $device) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white text-sm font-semibold rounded-lg shadow-md hover:from-slate-600 hover:to-slate-700 hover:shadow-lg transition-all hover:scale-105">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                     Imprimir QR
                 </a>
@@ -24,9 +24,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
                 {{-- Device Info Card --}}
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                        <h3 class="text-lg font-semibold text-slate-800">Información del Dispositivo</h3>
+                <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-sm">
+                        <h3 class="text-lg font-bold text-slate-800 tracking-tight">Información del Dispositivo</h3>
                     </div>
                     <div class="p-6">
                         <dl class="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
@@ -88,10 +88,10 @@
                 {{-- Credentials Card --}}
                 <div class="space-y-8">
                     @if($device->credential)
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden" x-data="{ showPasswords: false }">
-                        <div class="px-6 py-4 border-b border-slate-100 bg-indigo-50 flex justify-between items-center">
-                            <h3 class="text-lg font-semibold text-indigo-800">🔐 Credenciales</h3>
-                            <button @click="showPasswords = !showPasswords" type="button" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition">
+                    <div class="bg-white rounded-2xl shadow-xl shadow-indigo-100/50 border border-indigo-100 overflow-hidden" x-data="{ showPasswords: false }">
+                        <div class="px-6 py-4 border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-indigo-100/50 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-indigo-900 tracking-tight">🔐 Credenciales</h3>
+                            <button @click="showPasswords = !showPasswords" type="button" class="text-sm px-3 py-1 bg-white border border-indigo-200 rounded-md text-indigo-600 hover:text-indigo-800 font-medium transition shadow-sm hover:shadow">
                                 <span x-text="showPasswords ? '🔒 Ocultar' : '👁️ Mostrar'"></span>
                             </button>
                         </div>
@@ -126,9 +126,9 @@
                     @endif
 
                     {{-- Photos Card --}}
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden" x-data="{ lightbox: false, currentImg: '' }">
-                        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                            <h3 class="text-lg font-semibold text-slate-800">📷 Fotos del Equipo</h3>
+                    <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden" x-data="{ lightbox: false, currentImg: '' }">
+                        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-sm">
+                            <h3 class="text-lg font-bold text-slate-800 tracking-tight">📷 Fotos del Equipo</h3>
                         </div>
                         <div class="p-6">
                             @if($device->photos->count())
@@ -158,12 +158,12 @@
             </div>
 
             {{-- ===================== DOCUMENTS SECTION ===================== --}}
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                    <h3 class="text-lg font-semibold text-slate-800">📎 Documentos Adjuntos</h3>
+            <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-sm flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                    <h3 class="text-lg font-bold text-slate-800 tracking-tight">📎 Documentos Adjuntos</h3>
                     <form method="POST" action="{{ route('device.documents.store', $device) }}" enctype="multipart/form-data" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3 w-full md:w-auto">
                         @csrf
-                        <select name="type" required class="text-xs border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <select name="type" required class="text-xs border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                             <option value="" disabled selected>Selecciona tipo...</option>
                             <option value="factura">Factura</option>
                             <option value="garantia">Garantía</option>
@@ -171,18 +171,18 @@
                             <option value="manual">Manual</option>
                             <option value="otro">Otro</option>
                         </select>
-                        <input type="file" name="document" required class="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 w-full sm:w-auto">
-                        <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-md hover:bg-indigo-700 transition w-full sm:w-auto">Subir</button>
+                        <input type="file" name="document" required class="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 w-full sm:w-auto border border-slate-200 bg-white shadow-sm p-1 rounded-md">
+                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-xs font-bold rounded-md hover:from-indigo-400 hover:to-cyan-400 shadow-md shadow-cyan-500/20 transition-all hover:scale-105 w-full sm:w-auto">Subir</button>
                     </form>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-slate-100 text-sm">
-                        <thead class="bg-slate-50/50">
+                        <thead class="bg-slate-50/80 backdrop-blur-sm border-b border-slate-100">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Archivo</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Tipo</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase hidden sm:table-cell">Subido</th>
-                                <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">Acciones</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 tracking-wider">Archivo</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 tracking-wider">Tipo</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 tracking-wider hidden sm:table-cell">Subido</th>
+                                <th class="px-6 py-4 text-right text-xs font-bold text-indigo-900 tracking-wider">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -223,9 +223,9 @@
             </div>
 
             {{-- ===================== ASSIGNMENT TIMELINE ===================== --}}
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                    <h3 class="text-lg font-semibold text-slate-800">📋 Historial de Asignaciones</h3>
+            <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-sm">
+                    <h3 class="text-lg font-bold text-slate-800 tracking-tight">📋 Historial de Asignaciones</h3>
                 </div>
                 <div class="p-6">
                     @if($device->assignments->count())

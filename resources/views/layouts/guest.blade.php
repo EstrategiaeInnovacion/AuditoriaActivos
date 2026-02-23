@@ -16,15 +16,19 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-br from-indigo-100 to-white">
-            <div>
-                <a href="/" wire:navigate>
-                    <x-application-logo class="w-20 h-20 fill-current text-indigo-600" />
+    <body class="font-sans text-slate-300 antialiased bg-slate-900">
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 relative overflow-hidden">
+            <!-- Glass/Glow Background -->
+            <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-40"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-40"></div>
+            <div class="relative z-10 w-full flex justify-center">
+                <a href="/" wire:navigate class="flex items-center gap-3 group">
+                    <x-application-logo class="w-16 h-16 fill-current text-cyan-400 drop-shadow-md group-hover:scale-105 transition-transform" />
+                    <span class="text-3xl font-extrabold text-white tracking-tight drop-shadow-sm group-hover:text-cyan-100 transition-colors">Activos TI</span>
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-xl overflow-hidden sm:rounded-lg border border-gray-100">
+            <div class="relative z-10 w-full sm:max-w-md mt-8 px-8 py-8 bg-slate-800/80 backdrop-blur-xl shadow-2xl overflow-hidden sm:rounded-2xl border border-white/10">
                 {{ $slot }}
             </div>
         </div>

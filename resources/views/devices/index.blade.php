@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                 {{ __('Activos') }}
             </h2>
-            <a href="{{ route('devices.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+            <a href="{{ route('devices.create') }}" class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-cyan-500 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:from-indigo-400 hover:to-cyan-400 shadow-lg shadow-cyan-500/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-all hover:scale-105">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Agregar Nuevo
             </a>
@@ -31,7 +31,7 @@
                 </div>
             @endif
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
                 <!-- Search & Filters -->
                 <div class="p-4 border-b border-slate-100 bg-slate-50/50">
                     <form method="GET" action="{{ route('devices.index') }}" class="flex flex-col sm:flex-row gap-3">
@@ -51,7 +51,7 @@
                             <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Mantenimiento</option>
                             <option value="broken" {{ request('status') == 'broken' ? 'selected' : '' }}>Averiado</option>
                         </select>
-                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition">
+                        <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-slate-800 to-slate-700 text-white text-sm font-semibold rounded-md hover:from-slate-700 hover:to-slate-600 shadow-md transition-all">
                             Buscar
                         </button>
                         @if(request()->hasAny(['search', 'type', 'status']))
@@ -74,13 +74,13 @@
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-slate-100">
-                        <thead class="bg-slate-50">
+                        <thead class="bg-slate-50/80 backdrop-blur-sm border-b border-slate-100">
                             <tr>
-                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Dispositivo</th>
-                                <th scope="col" class="hidden sm:table-cell px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Tipo</th>
-                                <th scope="col" class="hidden md:table-cell px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Serie</th>
-                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
-                                <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Acciones</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-indigo-900 tracking-wider">Dispositivo</th>
+                                <th scope="col" class="hidden sm:table-cell px-6 py-4 text-left text-xs font-bold text-indigo-900 tracking-wider">Tipo</th>
+                                <th scope="col" class="hidden md:table-cell px-6 py-4 text-left text-xs font-bold text-indigo-900 tracking-wider">Serie</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-indigo-900 tracking-wider">Estado</th>
+                                <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-indigo-900 tracking-wider">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-slate-100">

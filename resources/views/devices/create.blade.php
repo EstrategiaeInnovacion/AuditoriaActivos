@@ -7,8 +7,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                <div class="p-8 text-slate-900">
                     <form method="POST" action="{{ route('devices.store') }}" enctype="multipart/form-data">
                         @csrf
 
@@ -134,10 +134,10 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-end mt-6">
-                            <x-primary-button class="ml-4">
+                        <div class="flex items-center justify-end mt-8 pt-6 border-t border-slate-100">
+                            <button type="submit" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-500 to-cyan-500 border border-transparent rounded-lg justify-center font-bold text-sm text-white uppercase tracking-widest hover:from-indigo-400 hover:to-cyan-400 shadow-lg shadow-cyan-500/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-all hover:scale-105">
                                 {{ __('Guardar Dispositivo') }}
-                            </x-primary-button>
+                            </button>
                         </div>
                     </form>
                 </div>
