@@ -28,7 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('documents/{document}', [\App\Http\Controllers\DeviceDocumentController::class , 'destroy'])->name('device.documents.destroy');
 });
 
-Route::middleware(['auth', 'verified', 'is_admin'])->group(function () {
+Route::middleware(['auth', 'verified', \App\Http\Middleware\IsAdmin::class])->group(function () {
     Route::resource('users', \App\Http\Controllers\UserController::class);
 });
 
