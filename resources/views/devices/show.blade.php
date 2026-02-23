@@ -134,8 +134,8 @@
                             @if($device->photos->count())
                                 <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
                                     @foreach($device->photos as $photo)
-                                        <div class="relative group cursor-pointer" @click="lightbox = true; currentImg = '{{ Storage::url($photo->file_path) }}'">
-                                            <img src="{{ Storage::url($photo->file_path) }}" alt="{{ $photo->caption ?? 'Foto del equipo' }}" class="w-full h-24 object-cover rounded-lg border border-slate-200 group-hover:border-indigo-400 transition">
+                                        <div class="relative group cursor-pointer" @click="lightbox = true; currentImg = '{{ route('device.photos.show', $photo) }}'">
+                                            <img src="{{ route('device.photos.show', $photo) }}" alt="{{ $photo->caption ?? 'Foto del equipo' }}" class="w-full h-24 object-cover rounded-lg border border-slate-200 group-hover:border-indigo-400 transition">
                                             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition flex items-center justify-center">
                                                 <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
                                             </div>
@@ -159,19 +159,20 @@
 
             {{-- ===================== DOCUMENTS SECTION ===================== --}}
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                     <h3 class="text-lg font-semibold text-slate-800">📎 Documentos Adjuntos</h3>
-                    <form method="POST" action="{{ route('device.documents.store', $device) }}" enctype="multipart/form-data" class="flex items-center gap-2">
+                    <form method="POST" action="{{ route('device.documents.store', $device) }}" enctype="multipart/form-data" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3 w-full md:w-auto">
                         @csrf
-                        <select name="type" class="text-xs border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <select name="type" required class="text-xs border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <option value="" disabled selected>Selecciona tipo...</option>
                             <option value="factura">Factura</option>
                             <option value="garantia">Garantía</option>
                             <option value="contrato">Contrato</option>
                             <option value="manual">Manual</option>
                             <option value="otro">Otro</option>
                         </select>
-                        <input type="file" name="document" required class="text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                        <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-md hover:bg-indigo-700 transition">Subir</button>
+                        <input type="file" name="document" required class="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 w-full sm:w-auto">
+                        <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-md hover:bg-indigo-700 transition w-full sm:w-auto">Subir</button>
                     </form>
                 </div>
                 <div class="overflow-x-auto">

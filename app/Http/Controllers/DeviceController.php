@@ -154,6 +154,14 @@ class DeviceController extends Controller
         return redirect()->route('devices.index')->with('success', 'Device deleted successfully.');
     }
 
+    public function showPhoto(\App\Models\DevicePhoto $photo)
+    {
+        if (!Storage::disk('private')->exists($photo->file_path)) {
+            abort(404);
+        }
+        return Storage::disk('private')->response($photo->file_path);
+    }
+
     public function printQr(Device $device)
     {
         $qrCode = QrCode::size(200)->generate(route('devices.show', $device->uuid));

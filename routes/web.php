@@ -21,6 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('devices', DeviceController::class);
     Route::get('devices/{device}/print-qr', [DeviceController::class , 'printQr'])->name('devices.print-qr');
+    Route::get('photos/{photo}', [DeviceController::class , 'showPhoto'])->name('device.photos.show');
 
     // Device Documents
     Route::post('devices/{device}/documents', [\App\Http\Controllers\DeviceDocumentController::class , 'store'])->name('device.documents.store');
