@@ -33,7 +33,7 @@ class DashboardController extends Controller
             ->get();
 
         // Monthly trend (last 6 months)
-        $monthlyTrend = Assignment::selectRaw("strftime('%Y-%m', assigned_at) as month, count(*) as total")
+        $monthlyTrend = Assignment::selectRaw("DATE_FORMAT(assigned_at, '%Y-%m') as month, count(*) as total")
             ->where('assigned_at', '>=', now()->subMonths(6))
             ->groupBy('month')
             ->orderBy('month')
