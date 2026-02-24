@@ -48,6 +48,7 @@ class DeviceController extends Controller
             'password' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'email_password' => 'nullable|string|max:255',
+            'photos' => 'nullable|array',
             'photos.*' => 'nullable|image|max:5120',
         ]);
 
@@ -104,6 +105,7 @@ class DeviceController extends Controller
             'password' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'email_password' => 'nullable|string|max:255',
+            'photos' => 'nullable|array',
             'photos.*' => 'nullable|image|max:5120',
             'delete_photos' => 'nullable|array',
         ]);

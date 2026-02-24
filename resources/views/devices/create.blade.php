@@ -132,6 +132,8 @@
                                     <img :src="src" class="w-full h-24 object-cover rounded-lg border border-slate-200">
                                 </template>
                             </div>
+                            <x-input-error :messages="$errors->get('photos')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('photos.*')" class="mt-2" />
                         </div>
 
                         <div class="flex items-center justify-end mt-8 pt-6 border-t border-slate-100">
