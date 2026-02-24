@@ -168,6 +168,29 @@ class DeviceController extends Controller
         return view('devices.print-qr', compact('device', 'qrCode'));
     }
 
+    public function printMultipleQrs(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (!$ids) {
+            return redirect()->route('devices.index')->with('error', 'No se seleccionaron dispositivos para imprimir.');
+        }
+
+        $idArray = explode(',', $ids);
+        $devices = Device::whereIn('id', $idArray)->get();
+
+        if ($devices->isEmpty()) {
+            return redirect()->route('devices.index')->with('error', 'Los dispositivos seleccionados no existen.');
+        }
+
+        // Generate QRs for each device
+        $devicesWithQr = $devices->map(function ($device) {
+            $device->qrCode = QrCode::size(200)->generate(route('devices.show', $device->uuid));
+            return $device;
+        });
+
+        return view('devices.print-multiple-qrs', compact('devicesWithQr'));
+    }
+
     public function exportExcel(Request $request)
     {
         return \Maatwebsite\Excel\Facades\Excel::download(

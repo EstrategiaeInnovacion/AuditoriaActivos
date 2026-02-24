@@ -69,6 +69,10 @@
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                             PDF
                         </a>
+                        <button type="button" id="print-selected-qrs-btn" class="inline-flex items-center px-3 py-2 bg-slate-800 text-white text-xs font-medium rounded-md hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            Imprimir QR Seleccionados
+                        </button>
                     </div>
                 </div>
 
@@ -76,6 +80,9 @@
                     <table class="min-w-full divide-y divide-slate-100">
                         <thead class="bg-slate-50/80 backdrop-blur-sm border-b border-slate-100">
                             <tr>
+                                <th scope="col" class="px-6 py-4 text-left">
+                                    <input type="checkbox" id="select-all-devices" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                </th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-indigo-900 tracking-wider">Dispositivo</th>
                                 <th scope="col" class="hidden sm:table-cell px-6 py-4 text-left text-xs font-bold text-indigo-900 tracking-wider">Tipo</th>
                                 <th scope="col" class="hidden md:table-cell px-6 py-4 text-left text-xs font-bold text-indigo-900 tracking-wider">Serie</th>
@@ -86,6 +93,9 @@
                         <tbody class="bg-white divide-y divide-slate-100">
                             @forelse ($devices as $device)
                                 <tr class="hover:bg-slate-50 transition duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="device-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" value="{{ $device->id }}">
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500">
@@ -147,7 +157,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center">
+                                    <td colspan="6" class="px-6 py-12 text-center">
                                         <div class="text-slate-400">
                                             <svg class="mx-auto h-12 w-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                                             <p class="text-sm font-medium">No se encontraron dispositivos</p>
@@ -165,4 +175,49 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllCheckbox = document.getElementById('select-all-devices');
+            const deviceCheckboxes = document.querySelectorAll('.device-checkbox');
+            const printBtn = document.getElementById('print-selected-qrs-btn');
+
+            function updatePrintButtonState() {
+                const checkedCount = document.querySelectorAll('.device-checkbox:checked').length;
+                printBtn.disabled = checkedCount === 0;
+            }
+
+            selectAllCheckbox.addEventListener('change', function() {
+                deviceCheckboxes.forEach(checkbox => {
+                    checkbox.checked = selectAllCheckbox.checked;
+                });
+                updatePrintButtonState();
+            });
+
+            deviceCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (!this.checked) {
+                        selectAllCheckbox.checked = false;
+                    } else {
+                        const allChecked = Array.from(deviceCheckboxes).every(c => c.checked);
+                        selectAllCheckbox.checked = allChecked;
+                    }
+                    updatePrintButtonState();
+                });
+            });
+
+            printBtn.addEventListener('click', function() {
+                const checkedIds = Array.from(document.querySelectorAll('.device-checkbox:checked'))
+                    .map(checkbox => checkbox.value);
+                
+                if (checkedIds.length > 0) {
+                    const idsParam = checkedIds.join(',');
+                    const url = `{{ route('devices.print-multiple-qrs') }}?ids=${idsParam}`;
+                    window.open(url, '_blank');
+                }
+            });
+        });
+    </script>
+    @endpush
 </x-app-layout>

@@ -20,6 +20,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('export/devices/pdf', [DeviceController::class , 'exportPdf'])->name('devices.export.pdf');
 
     Route::resource('devices', DeviceController::class);
+    Route::get('devices/print-multiple-qrs', [DeviceController::class , 'printMultipleQrs'])->name('devices.print-multiple-qrs');
     Route::get('devices/{device}/print-qr', [DeviceController::class , 'printQr'])->name('devices.print-qr');
     Route::get('photos/{photo}', [DeviceController::class , 'showPhoto'])->name('device.photos.show');
 
