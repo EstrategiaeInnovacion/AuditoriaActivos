@@ -18,9 +18,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Exports (must be before resource to avoid route conflict)
     Route::get('export/devices/excel', [DeviceController::class , 'exportExcel'])->name('devices.export.excel');
     Route::get('export/devices/pdf', [DeviceController::class , 'exportPdf'])->name('devices.export.pdf');
+    Route::get('devices/print-multiple-qrs', [DeviceController::class , 'printMultipleQrs'])->name('devices.print-multiple-qrs');
 
     Route::resource('devices', DeviceController::class);
-    Route::get('devices/print-multiple-qrs', [DeviceController::class , 'printMultipleQrs'])->name('devices.print-multiple-qrs');
     Route::get('devices/{device}/print-qr', [DeviceController::class , 'printQr'])->name('devices.print-qr');
     Route::get('photos/{photo}', [DeviceController::class , 'showPhoto'])->name('device.photos.show');
 
