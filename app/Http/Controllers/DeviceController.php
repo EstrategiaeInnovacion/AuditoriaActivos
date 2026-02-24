@@ -52,7 +52,8 @@ class DeviceController extends Controller
             'photos.*' => 'nullable|image|max:5120',
         ]);
 
-        $device = Device::create($validated);
+        $deviceData = collect($validated)->except(['photos'])->toArray();
+        $device = Device::create($deviceData);
 
         if ($request->filled('username') || $request->filled('email')) {
             $device->credential()->create([
@@ -110,7 +111,8 @@ class DeviceController extends Controller
             'delete_photos' => 'nullable|array',
         ]);
 
-        $device->update($validated);
+        $deviceData = collect($validated)->except(['photos', 'delete_photos'])->toArray();
+        $device->update($deviceData);
 
         if ($request->filled('username') || $request->filled('email')) {
             $device->credential()->updateOrCreate(
