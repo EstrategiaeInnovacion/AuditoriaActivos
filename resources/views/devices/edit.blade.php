@@ -148,7 +148,7 @@
                                     </template>
                                 </div>
                                 <x-input-error :messages="$errors->get('photos')" class="mt-2" />
-                                <x-input-error :messages="$errors->get('photos.*')" class="mt-2" />
+                                <x-input-error :messages="collect($errors->get('photos.*'))->flatten()->all()" class="mt-2" />
                             </div>
                         </div>
 

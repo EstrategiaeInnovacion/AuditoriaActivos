@@ -49,7 +49,7 @@ class DeviceController extends Controller
             'email' => 'nullable|email|max:255',
             'email_password' => 'nullable|string|max:255',
             'photos' => 'nullable|array',
-            'photos.*' => 'nullable|image|max:5120',
+            'photos.*' => 'nullable|image|max:20480',
         ]);
 
         $deviceData = collect($validated)->except(['photos'])->toArray();
@@ -107,7 +107,7 @@ class DeviceController extends Controller
             'email' => 'nullable|email|max:255',
             'email_password' => 'nullable|string|max:255',
             'photos' => 'nullable|array',
-            'photos.*' => 'nullable|image|max:5120',
+            'photos.*' => 'nullable|image|max:20480',
             'delete_photos' => 'nullable|array',
         ]);
 
