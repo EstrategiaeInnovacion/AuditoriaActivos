@@ -107,8 +107,8 @@
         <div>
             <label for="qr-size-select" style="font-weight: bold; margin-right: 10px;">Tamaño del QR:</label>
             <select id="qr-size-select" onchange="changeSize(this.value)">
-                <option value="extra_small">Extra Pequeño (~1.5x1.5 cm) - Mouse</option>
-                <option value="small">Pequeño (~3x3 cm) - Teclados/Teléfonos</option>
+                <option value="extra_small">Extra Pequeño (~2x2 cm)</option>
+                <option value="small">Pequeño (~3x3 cm) - Mouse/Teclados</option>
                 <option value="medium" selected>Mediano (~5x5 cm) - Laptops/Monitores</option>
                 <option value="large">Grande (~8x8 cm) - PCs/Impresoras</option>
             </select>
@@ -136,9 +136,8 @@
         function changeSize(size) {
             const root = document.documentElement;
             if (size === 'extra_small') {
-                root.style.setProperty('--qr-size', '45px');
-                root.style.setProperty('--font-size', '6px');
-                root.querySelector('.device-info').style.lineHeight = '1.1';
+                root.style.setProperty('--qr-size', '65px');
+                root.style.setProperty('--font-size', '8px');
             } else if (size === 'small') {
                 root.style.setProperty('--qr-size', '100px');
                 root.style.setProperty('--font-size', '10px');
