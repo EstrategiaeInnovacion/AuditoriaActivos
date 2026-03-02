@@ -1,5 +1,10 @@
 <div class="max-w-md mx-auto p-4 flex flex-col items-center">
-    <h2 class="text-2xl font-bold mb-4 text-gray-800">Escáner de Activos</h2>
+    <div class="flex items-center justify-between w-full mb-4">
+        <h2 class="text-2xl font-bold text-gray-800">Escáner de Activos</h2>
+        <button wire:click="toggleQuickMode" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all {{ $quickMode ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-300' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}">
+            ⚡ {{ $quickMode ? 'Rápido ON' : 'Modo Rápido' }}
+        </button>
+    </div>
 
     @if(!$scannedCode)
         @if(!$isScanning)
@@ -28,9 +33,13 @@
         <div class="w-full bg-green-100 rounded-lg shadow-md p-6 text-center">
             <h3 class="text-2xl font-bold text-green-800 mb-2">¡Listo!</h3>
             <p class="text-green-700 mb-6">{{ $message }}</p>
-            <button wire:click="resetScanner" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow hover:bg-green-700">
-                Escanear otro equipo
-            </button>
+            @if($quickMode)
+                <p class="text-sm text-green-600 animate-pulse">Reiniciando escáner...</p>
+            @else
+                <button wire:click="resetScanner" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow hover:bg-green-700">
+                    Escanear otro equipo
+                </button>
+            @endif
         </div>
 
     @else
@@ -102,16 +111,42 @@
                 @else
                     <div class="mt-6 flex flex-col gap-3">
                         @if($device->status === 'available')
-                            <button wire:click="toggleAssignForm" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow hover:bg-blue-700">
-                                Asignar / Prestar Equipo
-                            </button>
+                            @if($quickMode)
+                                {{-- Quick mode: simplified assign --}}
+                                <div class="border-t pt-4">
+                                    <h4 class="font-bold text-gray-700 mb-3 text-center">⚡ Asignación Rápida</h4>
+                                    <div class="mb-3">
+                                        <select wire:model="selectedUser" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            <option value="">Selecciona un empleado...</option>
+                                            @foreach($users as $user)
+                                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('selectedUser') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    </div>
+                                    <button wire:click="saveAssignment" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow hover:bg-blue-700">
+                                        ✅ Asignar
+                                    </button>
+                                </div>
+                            @else
+                                <button wire:click="toggleAssignForm" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow hover:bg-blue-700">
+                                    Asignar / Prestar Equipo
+                                </button>
+                            @endif
                         @elseif($device->status === 'broken')
                              <div class="p-3 bg-red-100 text-red-800 rounded text-center">
                                 Este equipo está marcado como averiado.
                              </div>
                         @else
-                            <button wire:click="returnDevice" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow hover:bg-green-700">
-                                Recibir Devolución
+                            @if($quickMode && $device->currentAssignment)
+                                <div class="p-3 bg-blue-50 rounded-lg text-center mb-2">
+                                    <p class="text-xs text-slate-500">Asignado a:</p>
+                                    <p class="font-bold text-blue-800">{{ $device->currentAssignment->user ? $device->currentAssignment->user->name : $device->currentAssignment->assigned_to }}</p>
+                                    <p class="text-xs text-slate-400">{{ $device->currentAssignment->assigned_at->diffForHumans() }}</p>
+                                </div>
+                            @endif
+                            <button wire:click="returnDevice" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow hover:bg-green-700 {{ $quickMode ? 'text-lg py-4' : '' }}">
+                                ✅ Recibir Devolución
                             </button>
                         @endif
                         
@@ -201,6 +236,14 @@
             Livewire.hook('element.removed', ({ el, component }) => {
                  // Si el componente se elimina, liberamos
                  stopScanner();
+            });
+
+            // Auto-scan en modo rápido
+            Livewire.on('auto-scan-next', () => {
+                setTimeout(() => {
+                    @this.resetScanner();
+                    @this.startScanning();
+                }, 1500);
             });
         });
     </script>

@@ -20,7 +20,12 @@ class DeviceController extends Controller
         ))
             ->when($request->type, fn($q, $t) => $q->where('type', $t))
             ->when($request->status, fn($q, $s) => $q->where('status', $s))
-            ->latest()
+            ->when($request->sort, function ($q) use ($request) {
+            $allowed = ['name', 'brand', 'serial_number', 'type', 'status', 'created_at'];
+            $col = in_array($request->sort, $allowed) ? $request->sort : 'created_at';
+            $dir = $request->direction === 'asc' ? 'asc' : 'desc';
+            return $q->orderBy($col, $dir);
+        }, fn($q) => $q->latest())
             ->paginate(10)
             ->withQueryString();
 

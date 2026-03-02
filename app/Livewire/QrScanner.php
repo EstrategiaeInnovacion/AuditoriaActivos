@@ -13,6 +13,7 @@ class QrScanner extends Component
     public $device = null;
     public $message = '';
     public $isScanning = false;
+    public $quickMode = false;
 
     // Variables para el formulario de asignación
     public $showAssignForm = false;
@@ -27,6 +28,11 @@ class QrScanner extends Component
         $this->isScanning = true;
     }
 
+    public function toggleQuickMode()
+    {
+        $this->quickMode = !$this->quickMode;
+    }
+
     public function processQr($qrCode)
     {
         $this->isScanning = false; // Stop scanning after successful scan
@@ -38,7 +44,7 @@ class QrScanner extends Component
         // Si no parece un UUID (ej. es una URL completa), intentamos buscar por UUID directamente si el string es solo el UUID
         // Pero asumimos que el QR tiene la URL completa route('devices.show', uuid)
 
-        $this->device = Device::where('uuid', $uuid)->first();
+        $this->device = Device::with('currentAssignment.user')->where('uuid', $uuid)->first();
 
         if ($this->device) {
             $this->message = "¡Equipo encontrado!";
@@ -89,8 +95,11 @@ class QrScanner extends Component
         // 4. Reiniciamos la pantalla con mensaje de éxito
         $this->resetScanner();
         $this->message = "¡Equipo asignado correctamente!";
-        // Forzamos a que el mensaje se quede visible un momento en la pantalla principal
         $this->scannedCode = 'success_screen';
+
+        if ($this->quickMode) {
+            $this->dispatch('auto-scan-next');
+        }
     }
 
     public function returnDevice()
@@ -108,11 +117,17 @@ class QrScanner extends Component
         $this->resetScanner();
         $this->message = "¡Equipo devuelto correctamente!";
         $this->scannedCode = 'success_screen';
+
+        if ($this->quickMode) {
+            $this->dispatch('auto-scan-next');
+        }
     }
 
     public function resetScanner()
     {
+        $quickMode = $this->quickMode;
         $this->reset(['scannedCode', 'device', 'message', 'showAssignForm', 'selectedUser', 'assignmentType', 'expectedReturnDate', 'deliveryConditions']);
+        $this->quickMode = $quickMode;
     }
 
     public function render()

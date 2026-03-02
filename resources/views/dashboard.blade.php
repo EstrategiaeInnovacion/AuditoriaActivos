@@ -149,7 +149,7 @@
                     <!-- Quick Actions -->
                     <div class="bg-white p-6 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
                         <h3 class="text-lg font-semibold text-slate-800 mb-4 tracking-tight">Acciones Rápidas</h3>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-3 gap-4">
                             <a href="{{ route('devices.create') }}" class="group flex flex-col items-center justify-center p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-cyan-200 hover:shadow-lg hover:shadow-cyan-100 transition-all text-slate-700">
                                 <div class="p-3 bg-indigo-50 text-indigo-500 rounded-full group-hover:bg-cyan-50 group-hover:text-cyan-600 transition-colors mb-2">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -161,6 +161,12 @@
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4h-4v-4H8m13-9v2m-3-2v2m-3-2v2m3 6v2m-3-2v2m-3-2v2m-3-2v2m3-2v2m-3-2v2m6 10v2m-3-2v2m-3-2v2m-3-2v2m-3-2v2m-3-2v2m-3-2v2"></path></svg>
                                 </div>
                                 <span class="text-sm font-semibold">Escanear QR</span>
+                            </button>
+                            <button @click="showQrScanner = true; $nextTick(() => { Livewire.dispatch('setQuickMode') })" class="group flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100/50 hover:from-amber-100 hover:to-amber-200/50 border border-transparent hover:border-amber-300 hover:shadow-lg hover:shadow-amber-100 transition-all text-amber-700">
+                                <div class="p-3 bg-amber-100 text-amber-600 rounded-full group-hover:bg-amber-200 group-hover:text-amber-700 transition-colors mb-2">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                </div>
+                                <span class="text-sm font-semibold">Modo Rápido</span>
                             </button>
                         </div>
                     </div>
