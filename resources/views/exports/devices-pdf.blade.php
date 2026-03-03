@@ -42,6 +42,12 @@
                 <th>Tipo</th>
                 <th>Estado</th>
                 <th>F. Compra</th>
+                @if(isset($includeCredentials) && $includeCredentials)
+                    <th>Usuario Eq.</th>
+                    <th>Clave Eq.</th>
+                    <th>Correo</th>
+                    <th>Clave Correo</th>
+                @endif
             </tr>
         </thead>
         <tbody>
@@ -60,6 +66,12 @@
                         <span class="badge badge-{{ $device->status }}">{{ $statuses[$device->status] ?? $device->status }}</span>
                     </td>
                     <td>{{ $device->purchase_date ?? 'N/A' }}</td>
+                    @if(isset($includeCredentials) && $includeCredentials)
+                        <td>{{ $device->credential->username ?? 'N/A' }}</td>
+                        <td>{{ $device->credential->password ?? 'N/A' }}</td>
+                        <td>{{ $device->credential->email ?? 'N/A' }}</td>
+                        <td>{{ $device->credential->email_password ?? 'N/A' }}</td>
+                    @endif
                 </tr>
             @endforeach
         </tbody>

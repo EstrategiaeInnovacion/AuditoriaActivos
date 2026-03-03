@@ -63,15 +63,15 @@
                             </a>
                         @endif
                     </form>
-                    <div class="flex flex-wrap items-center gap-2 mt-3">
-                        <a href="{{ route('devices.export.excel', request()->only('search', 'type', 'status')) }}" class="inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-medium rounded-md hover:bg-emerald-700 transition">
+                    <div class="flex flex-wrap items-center gap-2 mt-3" x-data="{ exportFormat: '' }">
+                        <button type="button" @click="$dispatch('open-modal', 'export-options'); exportFormat = 'excel'" class="inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-medium rounded-md hover:bg-emerald-700 transition">
                             <svg class="w-4 h-4 mr-1" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             Excel
-                        </a>
-                        <a href="{{ route('devices.export.pdf', request()->only('search', 'type', 'status')) }}" class="inline-flex items-center px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition">
+                        </button>
+                        <button type="button" @click="$dispatch('open-modal', 'export-options'); exportFormat = 'pdf'" class="inline-flex items-center px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition">
                             <svg class="w-4 h-4 mr-1" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                             PDF
-                        </a>
+                        </button>
                         <div class="flex items-center gap-2">
                             <button type="button" id="print-selected-qrs-btn" data-print-url="{{ route('devices.print-multiple-qrs') }}" class="inline-flex items-center px-3 py-2 bg-slate-800 text-white text-xs font-medium rounded-md hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                                 <svg class="w-4 h-4 mr-1" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
@@ -250,6 +250,40 @@
                     {{ $devices->links() }}
                 </div>
             </div>
+
+            {{-- Export Options Modal --}}
+            <x-modal name="export-options" focusable>
+                <div class="p-6">
+                    <h2 class="text-lg font-bold text-slate-800 mb-2">Opciones de Exportación</h2>
+                    <p class="text-sm text-slate-600 mb-4">¿Deseas incluir las <strong>contraseñas y credenciales</strong> de los equipos en el archivo exportado?</p>
+                    
+                    <form method="GET" :action="exportFormat === 'excel' ? '{{ route('devices.export.excel') }}' : '{{ route('devices.export.pdf') }}'">
+                        <!-- Parámetros actuales de búsqueda -->
+                        <input type="hidden" name="search" value="{{ request('search') }}">
+                        <input type="hidden" name="type" value="{{ request('type') }}">
+                        <input type="hidden" name="status" value="{{ request('status') }}">
+                        
+                        <div class="mb-6 flex items-start p-3 bg-amber-50 rounded-lg border border-amber-200">
+                            <div class="flex items-center h-5">
+                                <input id="include_credentials" name="include_credentials" type="checkbox" value="1" class="w-4 h-4 text-amber-600 bg-white border-gray-300 rounded focus:ring-amber-500 focus:ring-2">
+                            </div>
+                            <div class="ms-2 text-sm">
+                                <label for="include_credentials" class="font-medium text-amber-800">Sí, incluir contraseñas y correos</label>
+                                <p id="helper-checkbox-text" class="text-xs font-normal text-amber-600 mt-1">Ésta es información sensible, compártela solo con personal autorizado.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex justify-end gap-3">
+                            <x-secondary-button x-on:click="$dispatch('close')">
+                                Cancelar
+                            </x-secondary-button>
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-slate-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition" x-on:click="setTimeout(() => $dispatch('close'), 500)">
+                                Continuar y Descargar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </x-modal>
         </div>
     </div>
 

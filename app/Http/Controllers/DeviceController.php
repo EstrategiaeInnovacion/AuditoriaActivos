@@ -216,7 +216,7 @@ class DeviceController extends Controller
     public function exportExcel(Request $request)
     {
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\DeviceExport($request->search, $request->type, $request->status),
+            new \App\Exports\DeviceExport($request->search, $request->type, $request->status, $request->has('include_credentials')),
             'inventario-activos-' . now()->format('Y-m-d') . '.xlsx'
         );
     }
@@ -241,9 +241,14 @@ class DeviceController extends Controller
             $query->where('status', $request->status);
         }
 
-        $devices = $query->take(1000)->get();
+        if ($request->has('include_credentials')) {
+            $query->with('credential');
+        }
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.devices-pdf', compact('devices'))
+        $devices = $query->take(1000)->get();
+        $includeCredentials = $request->has('include_credentials');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.devices-pdf', compact('devices', 'includeCredentials'))
             ->setPaper('letter', 'landscape');
 
         return $pdf->download('inventario-activos-' . now()->format('Y-m-d') . '.pdf');

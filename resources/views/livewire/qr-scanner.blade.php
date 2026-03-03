@@ -1,9 +1,6 @@
 <div class="max-w-md mx-auto p-4 flex flex-col items-center">
     <div class="flex items-center justify-between w-full mb-4">
-        <h2 class="text-2xl font-bold text-gray-800">Escáner de Activos</h2>
-        <button wire:click="toggleQuickMode" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all {{ $quickMode ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-300' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}">
-            ⚡ {{ $quickMode ? 'Rápido ON' : 'Modo Rápido' }}
-        </button>
+        <h2 class="text-xl font-bold text-gray-800">Escáner de Activos</h2>
     </div>
 
     @if(!$scannedCode)

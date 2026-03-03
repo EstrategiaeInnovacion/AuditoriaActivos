@@ -15,17 +15,23 @@ class DeviceExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSi
     protected $search;
     protected $type;
     protected $status;
+    protected $includeCredentials;
 
-    public function __construct(?string $search = null, ?string $type = null, ?string $status = null)
+    public function __construct(?string $search = null, ?string $type = null, ?string $status = null, bool $includeCredentials = false)
     {
         $this->search = $search;
         $this->type = $type;
         $this->status = $status;
+        $this->includeCredentials = $includeCredentials;
     }
 
     public function query()
     {
         $query = Device::query();
+
+        if ($this->includeCredentials) {
+            $query->with('credential');
+        }
 
         if ($this->search) {
             $query->where(function ($q) {
@@ -48,7 +54,7 @@ class DeviceExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSi
 
     public function headings(): array
     {
-        return [
+        $headings = [
             'Nombre',
             'Marca',
             'Modelo',
@@ -59,6 +65,15 @@ class DeviceExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSi
             'Venc. Garantía',
             'Notas',
         ];
+
+        if ($this->includeCredentials) {
+            $headings[] = 'Usuario Equipo';
+            $headings[] = 'Contraseña Equipo';
+            $headings[] = 'Correo';
+            $headings[] = 'Contraseña Correo';
+        }
+
+        return $headings;
     }
 
     public function map($device): array
@@ -66,7 +81,7 @@ class DeviceExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSi
         $types = ['computer' => 'Computadora', 'peripheral' => 'Periférico', 'printer' => 'Impresora', 'other' => 'Otro'];
         $statuses = ['available' => 'Disponible', 'assigned' => 'Asignado', 'maintenance' => 'Mantenimiento', 'broken' => 'Averiado'];
 
-        return [
+        $row = [
             $device->name,
             $device->brand,
             $device->model,
@@ -77,6 +92,15 @@ class DeviceExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSi
             $device->warranty_expiration ?? 'N/A',
             $device->notes ?? '',
         ];
+
+        if ($this->includeCredentials) {
+            $row[] = $device->credential->username ?? 'N/A';
+            $row[] = $device->credential->password ?? 'N/A';
+            $row[] = $device->credential->email ?? 'N/A';
+            $row[] = $device->credential->email_password ?? 'N/A';
+        }
+
+        return $row;
     }
 
     public function styles(Worksheet $sheet)
