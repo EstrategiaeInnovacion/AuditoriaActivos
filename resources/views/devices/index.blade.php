@@ -5,7 +5,7 @@
                 {{ __('Activos') }}
             </h2>
             <a href="{{ route('devices.create') }}" class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-cyan-500 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:from-indigo-400 hover:to-cyan-400 shadow-lg shadow-cyan-500/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-all hover:scale-105">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <svg class="w-4 h-4 mr-2" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Agregar Nuevo
             </a>
         </div>
@@ -18,7 +18,7 @@
                 <div class="mb-6 bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-md shadow-sm">
                     <div class="flex">
                         <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
+                            <svg class="h-5 w-5 text-emerald-400" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
                         </div>
@@ -36,15 +36,18 @@
                 <div class="p-4 border-b border-slate-100 bg-slate-50/50">
                     <form method="GET" action="{{ route('devices.index') }}" class="flex flex-col sm:flex-row gap-3">
                         <div class="flex-1">
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar por nombre, serie o marca..." class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                            <label for="filter-search" class="sr-only">Buscar por nombre, serie o marca</label>
+                            <input type="text" id="filter-search" name="search" value="{{ request('search') }}" placeholder="Buscar por nombre, serie o marca..." class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
                         </div>
-                        <select name="type" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                        <label for="filter-type" class="sr-only">Filtrar por tipo de dispositivo</label>
+                        <select name="type" id="filter-type" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
                             <option value="">Todos los tipos</option>
                             <option value="computer" {{ request('type') == 'computer' ? 'selected' : '' }}>Computadora</option>
                             <option value="printer" {{ request('type') == 'printer' ? 'selected' : '' }}>Impresora</option>
                             <option value="other" {{ request('type') == 'other' ? 'selected' : '' }}>Otro</option>
                         </select>
-                        <select name="status" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                        <label for="filter-status" class="sr-only">Filtrar por estado</label>
+                        <select name="status" id="filter-status" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
                             <option value="">Todos los estados</option>
                             <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Disponible</option>
                             <option value="assigned" {{ request('status') == 'assigned' ? 'selected' : '' }}>Asignado</option>
@@ -62,30 +65,30 @@
                     </form>
                     <div class="flex flex-wrap items-center gap-2 mt-3">
                         <a href="{{ route('devices.export.excel', request()->only('search', 'type', 'status')) }}" class="inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-medium rounded-md hover:bg-emerald-700 transition">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <svg class="w-4 h-4 mr-1" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             Excel
                         </a>
                         <a href="{{ route('devices.export.pdf', request()->only('search', 'type', 'status')) }}" class="inline-flex items-center px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            <svg class="w-4 h-4 mr-1" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                             PDF
                         </a>
                         <div class="flex items-center gap-2">
-                            <button type="button" id="print-selected-qrs-btn" class="inline-flex items-center px-3 py-2 bg-slate-800 text-white text-xs font-medium rounded-md hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            <button type="button" id="print-selected-qrs-btn" data-print-url="{{ route('devices.print-multiple-qrs') }}" class="inline-flex items-center px-3 py-2 bg-slate-800 text-white text-xs font-medium rounded-md hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                <svg class="w-4 h-4 mr-1" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                 Imprimir QR
                                 <span id="selected-count-badge" class="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-indigo-500 text-white leading-none hidden">0</span>
                             </button>
                             <button type="button" id="clear-selection-btn" class="inline-flex items-center px-2 py-2 bg-red-100 text-red-600 text-xs font-medium rounded-md hover:bg-red-200 transition hidden" title="Limpiar selección">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
                         </div>
                         {{-- View Toggle --}}
                         <div class="flex items-center border border-slate-200 rounded-md overflow-hidden ml-auto" id="view-toggle">
                             <button type="button" data-view="table" class="view-toggle-btn px-2.5 py-2 text-xs font-medium transition" title="Vista tabla">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                                <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                             </button>
                             <button type="button" data-view="grid" class="view-toggle-btn px-2.5 py-2 text-xs font-medium transition" title="Vista tarjetas">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path></svg>
+                                <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path></svg>
                             </button>
                         </div>
                     </div>
@@ -118,7 +121,7 @@
                             <thead class="bg-slate-50/80 backdrop-blur-sm border-b border-slate-100">
                                 <tr>
                                     <th scope="col" class="px-6 py-4 text-left">
-                                        <input type="checkbox" id="select-all-devices" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                        <input type="checkbox" id="select-all-devices" aria-label="Seleccionar todos los dispositivos" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-indigo-900 tracking-wider">
                                         <a href="{{ $sortLink('name') }}" class="inline-flex items-center gap-1 hover:text-indigo-600 transition">
@@ -148,7 +151,7 @@
                                     @php $config = $statusConfig[$device->status] ?? ['bg' => 'bg-slate-100', 'text' => 'text-slate-700', 'label' => ucfirst($device->status)]; @endphp
                                     <tr class="hover:bg-slate-50 transition duration-150">
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <input type="checkbox" class="device-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" value="{{ $device->id }}">
+                                            <input type="checkbox" class="device-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" value="{{ $device->id }}" aria-label="Seleccionar {{ $device->name }}">
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
@@ -179,9 +182,9 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div class="flex justify-end space-x-3">
-                                                <a href="{{ route('devices.show', $device) }}" class="text-slate-400 hover:text-indigo-600 transition" title="Ver"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></a>
-                                                <a href="{{ route('devices.edit', $device) }}" class="text-slate-400 hover:text-amber-600 transition" title="Editar"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></a>
-                                                <a href="{{ route('devices.print-qr', $device) }}" target="_blank" class="text-slate-400 hover:text-slate-800 transition" title="QR"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4h-4v-4H8m13-9a2 2 0 00-2-2h-6.19a2 2 0 00-1.79 1.11l-3.82 7.64a2 2 0 001.78 2.89H11m5-9v.01M5 11v.01"></path></svg></a>
+                                                <a href="{{ route('devices.show', $device) }}" class="text-slate-400 hover:text-indigo-600 transition" aria-label="Ver detalles de {{ $device->name }}"><svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></a>
+                                                <a href="{{ route('devices.edit', $device) }}" class="text-slate-400 hover:text-amber-600 transition" aria-label="Editar {{ $device->name }}"><svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></a>
+                                                <a href="{{ route('devices.print-qr', $device) }}" target="_blank" class="text-slate-400 hover:text-slate-800 transition" aria-label="Imprimir QR de {{ $device->name }}"><svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4h-4v-4H8m13-9a2 2 0 00-2-2h-6.19a2 2 0 00-1.79 1.11l-3.82 7.64a2 2 0 001.78 2.89H11m5-9v.01M5 11v.01"></path></svg></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -208,7 +211,7 @@
                             @php $cfg = $statusConfig[$device->status] ?? ['bg' => 'bg-slate-100', 'text' => 'text-slate-700', 'label' => ucfirst($device->status)]; @endphp
                             <div class="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-lg hover:border-indigo-200 transition-all duration-200 group relative">
                                 <div class="absolute top-3 right-3">
-                                    <input type="checkbox" class="device-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" value="{{ $device->id }}">
+                                    <input type="checkbox" class="device-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" value="{{ $device->id }}" aria-label="Seleccionar {{ $device->name }}">
                                 </div>
                                 <div class="flex items-center gap-3 mb-3">
                                     <div class="flex-shrink-0 h-12 w-12 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center text-slate-500 group-hover:from-indigo-50 group-hover:to-indigo-100 group-hover:text-indigo-500 transition-colors">
@@ -229,9 +232,9 @@
                                 <div class="flex items-center justify-between">
                                     <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $cfg['bg'] }} {{ $cfg['text'] }}">{{ $cfg['label'] }}</span>
                                     <div class="flex items-center gap-2">
-                                        <a href="{{ route('devices.show', $device) }}" class="text-slate-400 hover:text-indigo-600 transition" title="Ver"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></a>
-                                        <a href="{{ route('devices.edit', $device) }}" class="text-slate-400 hover:text-amber-600 transition" title="Editar"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></a>
-                                        <a href="{{ route('devices.print-qr', $device) }}" target="_blank" class="text-slate-400 hover:text-slate-800 transition" title="QR"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4h-4v-4H8m13-9a2 2 0 00-2-2h-6.19a2 2 0 00-1.79 1.11l-3.82 7.64a2 2 0 001.78 2.89H11m5-9v.01M5 11v.01"></path></svg></a>
+                                        <a href="{{ route('devices.show', $device) }}" class="text-slate-400 hover:text-indigo-600 transition" aria-label="Ver detalles de {{ $device->name }}"><svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></a>
+                                        <a href="{{ route('devices.edit', $device) }}" class="text-slate-400 hover:text-amber-600 transition" aria-label="Editar {{ $device->name }}"><svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></a>
+                                        <a href="{{ route('devices.print-qr', $device) }}" target="_blank" class="text-slate-400 hover:text-slate-800 transition" aria-label="Imprimir QR de {{ $device->name }}"><svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4h-4v-4H8m13-9a2 2 0 00-2-2h-6.19a2 2 0 00-1.79 1.11l-3.82 7.64a2 2 0 001.78 2.89H11m5-9v.01M5 11v.01"></path></svg></a>
                                     </div>
                                 </div>
                             </div>
@@ -251,152 +254,6 @@
     </div>
 
     @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const STORAGE_KEY = 'selectedDeviceIds';
-            const VIEW_KEY = 'deviceViewMode';
-            const selectAllCheckbox = document.getElementById('select-all-devices');
-            const deviceCheckboxes = document.querySelectorAll('.device-checkbox');
-            const printBtn = document.getElementById('print-selected-qrs-btn');
-            const badge = document.getElementById('selected-count-badge');
-            const clearBtn = document.getElementById('clear-selection-btn');
-            const tableView = document.getElementById('table-view');
-            const gridView = document.getElementById('grid-view');
-            const toggleBtns = document.querySelectorAll('.view-toggle-btn');
-
-            // --- Helpers para sessionStorage ---
-            function getSelectedIds() {
-                try {
-                    return new Set(JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]'));
-                } catch {
-                    return new Set();
-                }
-            }
-
-            function saveSelectedIds(idSet) {
-                sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...idSet]));
-            }
-
-            // --- View Toggle ---
-            function setView(mode) {
-                localStorage.setItem(VIEW_KEY, mode);
-                if (mode === 'grid') {
-                    tableView.classList.add('hidden');
-                    gridView.classList.remove('hidden');
-                } else {
-                    tableView.classList.remove('hidden');
-                    gridView.classList.add('hidden');
-                }
-                toggleBtns.forEach(btn => {
-                    const isActive = btn.dataset.view === mode;
-                    btn.classList.toggle('bg-slate-800', isActive);
-                    btn.classList.toggle('text-white', isActive);
-                    btn.classList.toggle('text-slate-500', !isActive);
-                    btn.classList.toggle('hover:text-slate-700', !isActive);
-                    btn.classList.toggle('hover:bg-slate-100', !isActive);
-                });
-                // ReSync checkboxes after switching view
-                restoreCheckboxes();
-            }
-
-            toggleBtns.forEach(btn => {
-                btn.addEventListener('click', () => setView(btn.dataset.view));
-            });
-
-            // Initialize view from localStorage
-            setView(localStorage.getItem(VIEW_KEY) || 'table');
-
-            // --- Actualizar UI ---
-            function updateUI() {
-                const selectedIds = getSelectedIds();
-                const totalCount = selectedIds.size;
-
-                badge.textContent = totalCount;
-                badge.classList.toggle('hidden', totalCount === 0);
-                printBtn.disabled = totalCount === 0;
-                clearBtn.classList.toggle('hidden', totalCount === 0);
-
-                // Select-all checkbox (only visible checkboxes on current view)
-                const visibleCheckboxes = getVisibleCheckboxes();
-                const allOnPageChecked = visibleCheckboxes.length > 0 &&
-                    visibleCheckboxes.every(cb => cb.checked);
-                selectAllCheckbox.checked = allOnPageChecked;
-            }
-
-            function getVisibleCheckboxes() {
-                const activeView = gridView.classList.contains('hidden') ? tableView : gridView;
-                return Array.from(activeView.querySelectorAll('.device-checkbox'));
-            }
-
-            // --- Restaurar checkboxes al cargar la página ---
-            function restoreCheckboxes() {
-                const selectedIds = getSelectedIds();
-                deviceCheckboxes.forEach(cb => {
-                    cb.checked = selectedIds.has(cb.value);
-                });
-                updateUI();
-            }
-
-            // --- Sync all checkboxes with same value ---
-            function syncCheckbox(value, checked) {
-                deviceCheckboxes.forEach(cb => {
-                    if (cb.value === value) cb.checked = checked;
-                });
-            }
-
-            // --- Eventos ---
-            selectAllCheckbox.addEventListener('change', function() {
-                const selectedIds = getSelectedIds();
-                const visibleCheckboxes = getVisibleCheckboxes();
-                visibleCheckboxes.forEach(cb => {
-                    cb.checked = this.checked;
-                    syncCheckbox(cb.value, this.checked);
-                    if (this.checked) {
-                        selectedIds.add(cb.value);
-                    } else {
-                        selectedIds.delete(cb.value);
-                    }
-                });
-                saveSelectedIds(selectedIds);
-                updateUI();
-            });
-
-            deviceCheckboxes.forEach(cb => {
-                cb.addEventListener('change', function() {
-                    const selectedIds = getSelectedIds();
-                    if (this.checked) {
-                        selectedIds.add(this.value);
-                    } else {
-                        selectedIds.delete(this.value);
-                    }
-                    syncCheckbox(this.value, this.checked);
-                    saveSelectedIds(selectedIds);
-                    updateUI();
-                });
-            });
-
-            printBtn.addEventListener('click', function() {
-                const selectedIds = getSelectedIds();
-                if (selectedIds.size > 0) {
-                    const idsParam = [...selectedIds].join(',');
-                    const url = `{{ route('devices.print-multiple-qrs') }}?ids=${idsParam}`;
-                    window.open(url, '_blank');
-                    sessionStorage.removeItem(STORAGE_KEY);
-                    deviceCheckboxes.forEach(cb => cb.checked = false);
-                    updateUI();
-                }
-            });
-
-            clearBtn.addEventListener('click', function() {
-                sessionStorage.removeItem(STORAGE_KEY);
-                deviceCheckboxes.forEach(cb => cb.checked = false);
-                selectAllCheckbox.checked = false;
-                updateUI();
-            });
-
-            // Inicializar
-            restoreCheckboxes();
-        });
-    </script>
+    @vite('resources/js/device-index.js')
     @endpush
 </x-app-layout>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'activos-v2';
+const CACHE_NAME = 'activos-v2-20260303';
 const STATIC_ASSETS = [
     '/offline.html',
 ];

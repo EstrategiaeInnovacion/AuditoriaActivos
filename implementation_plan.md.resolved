@@ -1,0 +1,143 @@
+# Plan de Corrección — Auditoría Web control-activos-v2
+
+Corregir los 23 hallazgos de rendimiento y accesibilidad en 4 fases incrementales, de mayor a menor impacto.
+
+---
+
+## Fase 1 — Accesibilidad Crítica (Issues #1, #2, #3, #10, #13, #21)
+
+Cambios mecánicos masivos: agregar atributos `aria-*`, `alt`, `for`/`id` y labels faltantes en toda la app.
+
+### Archivos por componente
+
+#### [MODIFY] [app.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/layouts/app.blade.php)
+- Agregar skip link (`<a href="#main-content" class="sr-only focus:not-sr-only ...">`) antes de la nav
+- Agregar `id="main-content"` al `<main>`
+
+#### [MODIFY] [guest.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/layouts/guest.blade.php)
+- Envolver contenido en `<main>` semántico
+- Agregar `<header>` alrededor del logo
+
+#### [MODIFY] [dashboard.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/dashboard.blade.php)
+- Todos los SVGs decorativos → `aria-hidden="true"`
+- Emojis informativos → `<span role="img" aria-label="...">`
+- Botón cerrar modal ya tiene `sr-only` ✅
+
+#### [MODIFY] [index.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/devices/index.blade.php)
+- Agregar `<label class="sr-only">` para `<select name="type">`, `<select name="status">`, y `<input name="search">`
+- Agregar `aria-label` a checkboxes (`select-all`, `device-checkbox`)
+- Todos los SVGs en botones de acción → `aria-hidden="true"`
+- Links de acción (Ver, Editar, QR) → agregar `aria-label` descriptivos
+- SVGs en toggle de vista → `aria-hidden="true"`, botones ya tienen `title`
+
+#### [MODIFY] [show.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/devices/show.blade.php)
+- SVGs → `aria-hidden="true"`
+- Lightbox img → agregar `alt` dinámico
+- Emojis → `<span role="img" aria-label="...">`
+
+#### [MODIFY] [create.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/devices/create.blade.php)
+- Preview imgs → agregar `alt="Vista previa"`
+
+#### [MODIFY] [edit.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/devices/edit.blade.php)
+- `alt="Foto"` genérico → `alt="Foto del equipo {{ $device->name }}"`
+- Preview imgs → agregar `alt="Vista previa"`
+
+#### [MODIFY] [qr-scanner.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/livewire/qr-scanner.blade.php)
+- Labels: agregar `for` + `id` a todos los pares label/select/input
+- SVGs → `aria-hidden="true"`
+
+---
+
+## Fase 2 — Rendimiento Crítico + CSS Global (Issues #4, #7, #8, #9, #17)
+
+Optimización del bundle JS y CSS de accesibilidad global.
+
+#### [MODIFY] [app.js](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/js/app.js)
+- Eliminar imports estáticos de `chart.js/auto` y `html5-qrcode`
+- Las bibliotecas se cargarán dinámicamente donde se necesiten
+
+#### [MODIFY] [app.css](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/css/app.css)
+- Agregar media query `@media (prefers-reduced-motion: reduce)` para deshabilitar animaciones
+- Agregar clase `.sr-only` y `.skip-link` utilitarias
+
+#### [MODIFY] [dashboard-chart.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/livewire/dashboard-chart.blade.php)
+- Cargar Chart.js dinámicamente con `import('chart.js/auto')`
+
+#### [MODIFY] [qr-scanner.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/livewire/qr-scanner.blade.php)
+- Cargar html5-qrcode dinámicamente con `import('html5-qrcode')`
+
+#### [MODIFY] Preconnect en 3 archivos
+- [app.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/layouts/app.blade.php) — agregar `crossorigin` al preconnect
+- [guest.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/layouts/guest.blade.php) — idem
+- [welcome.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/welcome.blade.php) — idem + agregar preconnect a `tailwindui.com`
+
+#### [MODIFY] [sw.js](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/public/sw.js)
+- Cambiar `CACHE_NAME` a incluir fecha/versión para invalidación
+
+---
+
+## Fase 3 — UX y Accesibilidad Media (Issues #5, #6, #11, #12, #14, #15, #16)
+
+Mejoras de estructura semántica, extracción de JS, y focus trap.
+
+#### [MODIFY] [dashboard.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/dashboard.blade.php)
+- Modal QR: agregar focus trap con JS (atrapar Tab/Shift+Tab, cerrar con Escape)
+- Agregar atributos `aria-labelledby` y `role="dialog"` al modal (ya tiene `role="dialog"` ✅)
+
+#### [NEW] [device-index.js](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/js/device-index.js)
+- Extraer las ~150 líneas de JS inline de [index.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/users/index.blade.php) a este archivo
+
+#### [MODIFY] [index.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/devices/index.blade.php)
+- Reemplazar `@push('scripts')` inline con carga del archivo externo
+
+#### [MODIFY] [app.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/layouts/app.blade.php)
+- Mover script de SW registration a [app.js](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/js/app.js) o marcarlo como `defer`
+
+#### [MODIFY] [welcome.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/welcome.blade.php)
+- Agregar `<meta name="description" content="...">`
+
+---
+
+## Fase 4 — Pulido Final (Issues #18, #19, #22, #23)
+
+Mejoras menores de PWA y offline.
+
+#### [MODIFY] [guest.blade.php](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/resources/views/layouts/guest.blade.php)
+- Agregar `<meta name="description">`
+
+#### [MODIFY] [manifest.json](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/public/manifest.json)
+- Agregar iconos PNG como fallback (o documentar que SVG es suficiente para el target)
+
+#### [MODIFY] [offline.html](file:///c:/Users/trade/Desktop/Proyectos/control-activos-v2/public/offline.html)
+- Eliminar referencia a Inter del font-family (no disponible offline)
+- Agregar `button:focus-visible { outline: 2px solid ...; }`
+- Agregar `@media (prefers-reduced-motion: reduce)` para la animación pulse
+
+---
+
+## Verificación
+
+### Build de Vite
+```bash
+cd c:\Users\trade\Desktop\Proyectos\control-activos-v2
+npm run build
+```
+- Verificar que compila sin errores
+- Comparar tamaño del bundle antes vs después de la Fase 2 (esperamos ~350KB menos)
+
+### Tests existentes
+```bash
+php artisan test
+```
+- Ejecutar la suite completa para asegurar que no se rompió nada
+
+### Verificación visual con navegador
+- Abrir la app localmente (`php artisan serve` + `npm run dev`)
+- Navegar por: landing, login, dashboard, listado de activos, crear/editar activo, escáner QR
+- Confirmar que las funcionalidades siguen operando correctamente
+- Verificar que el gráfico del dashboard y el escáner QR aún cargan (carga dinámica)
+
+### Verificación manual de accesibilidad
+- Usar Tab para navegar por cada página — verificar que el skip link aparece
+- Verificar que los focus styles son visibles en todos los elementos interactivos
+- Activar "Reduced Motion" en Windows (Configuración → Accesibilidad → Efectos visuales → desactivar animaciones) y verificar que las animaciones se detienen

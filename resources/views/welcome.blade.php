@@ -5,8 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
         <title>Control de Activos</title>
+        <meta name="description" content="Sistema de control y gestión de activos tecnológicos. Administra dispositivos, asignaciones y préstamos de equipos de TI.">
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600&display=swap" rel="stylesheet" />
         <!-- Styles -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -6,11 +6,11 @@
             </h2>
             <div class="flex flex-wrap gap-2">
                 <a href="{{ route('devices.edit', $device) }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-semibold rounded-lg shadow-md hover:from-amber-400 hover:to-amber-500 hover:shadow-lg transition-all hover:scale-105">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    <svg class="w-4 h-4 mr-1.5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                     Editar
                 </a>
                 <a href="{{ route('devices.print-qr', $device) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-slate-700 to-slate-800 text-white text-sm font-semibold rounded-lg shadow-md hover:from-slate-600 hover:to-slate-700 hover:shadow-lg transition-all hover:scale-105">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    <svg class="w-4 h-4 mr-1.5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                     Imprimir QR
                 </a>
             </div>
@@ -90,7 +90,7 @@
                     @if($device->credential)
                     <div class="bg-white rounded-2xl shadow-xl shadow-indigo-100/50 border border-indigo-100 overflow-hidden" x-data="{ showPasswords: false }">
                         <div class="px-6 py-4 border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-indigo-100/50 flex justify-between items-center">
-                            <h3 class="text-lg font-bold text-indigo-900 tracking-tight">🔐 Credenciales</h3>
+                            <h3 class="text-lg font-bold text-indigo-900 tracking-tight"><span role="img" aria-label="Credenciales">🔐</span> Credenciales</h3>
                             <button @click="showPasswords = !showPasswords" type="button" class="text-sm px-3 py-1 bg-white border border-indigo-200 rounded-md text-indigo-600 hover:text-indigo-800 font-medium transition shadow-sm hover:shadow">
                                 <span x-text="showPasswords ? '🔒 Ocultar' : '👁️ Mostrar'"></span>
                             </button>
@@ -128,7 +128,7 @@
                     {{-- Photos Card --}}
                     <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden" x-data="{ lightbox: false, currentImg: '' }">
                         <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-sm">
-                            <h3 class="text-lg font-bold text-slate-800 tracking-tight">📷 Fotos del Equipo</h3>
+                            <h3 class="text-lg font-bold text-slate-800 tracking-tight"><span role="img" aria-label="Fotos">📷</span> Fotos del Equipo</h3>
                         </div>
                         <div class="p-6">
                             @if($device->photos->count())
@@ -137,7 +137,7 @@
                                         <div class="relative group cursor-pointer" @click="lightbox = true; currentImg = '{{ route('device.photos.show', $photo) }}'">
                                             <img src="{{ route('device.photos.show', $photo) }}" alt="{{ $photo->caption ?? 'Foto del equipo' }}" class="w-full h-24 object-cover rounded-lg border border-slate-200 group-hover:border-indigo-400 transition">
                                             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition flex items-center justify-center">
-                                                <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                                                <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
                                             </div>
                                         </div>
                                     @endforeach
@@ -148,9 +148,9 @@
                         </div>
                         {{-- Lightbox --}}
                         <div x-show="lightbox" x-cloak @click="lightbox = false" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-                            <img :src="currentImg" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl">
+                            <img :src="currentImg" alt="Foto ampliada del equipo" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl">
                             <button @click="lightbox = false" class="absolute top-4 right-4 text-white hover:text-slate-300 transition">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                <svg class="w-8 h-8" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
                         </div>
                     </div>
@@ -160,7 +160,7 @@
             {{-- ===================== DOCUMENTS SECTION ===================== --}}
             <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-sm flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                    <h3 class="text-lg font-bold text-slate-800 tracking-tight">📎 Documentos Adjuntos</h3>
+                    <h3 class="text-lg font-bold text-slate-800 tracking-tight"><span role="img" aria-label="Documentos">📎</span> Documentos Adjuntos</h3>
                     <form method="POST" action="{{ route('device.documents.store', $device) }}" enctype="multipart/form-data" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3 w-full md:w-auto">
                         @csrf
                         <select name="type" required class="text-xs border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
@@ -225,7 +225,7 @@
             {{-- ===================== ASSIGNMENT TIMELINE ===================== --}}
             <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-sm">
-                    <h3 class="text-lg font-bold text-slate-800 tracking-tight">📋 Historial de Asignaciones</h3>
+                    <h3 class="text-lg font-bold text-slate-800 tracking-tight"><span role="img" aria-label="Historial">📋</span> Historial de Asignaciones</h3>
                 </div>
                 <div class="p-6">
                     @if($device->assignments->count())
@@ -278,7 +278,7 @@
                         </div>
                     @else
                         <div class="text-center py-8">
-                            <svg class="mx-auto h-12 w-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <svg class="mx-auto h-12 w-12 text-slate-300 mb-3" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <p class="text-sm text-slate-400">No hay historial de asignaciones para este equipo.</p>
                         </div>
                     @endif

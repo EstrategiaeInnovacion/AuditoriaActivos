@@ -5,13 +5,19 @@
     </div>
 
     <script>
-        document.addEventListener('livewire:navigated', () => {
+        document.addEventListener('livewire:navigated', async () => {
             const ctx = document.getElementById('deviceStatusChart');
             if (!ctx) return;
 
             // Destroy existing chart if it exists to prevent duplicates
             if (window.myDeviceChart) {
                 window.myDeviceChart.destroy();
+            }
+
+            // Dynamically load Chart.js only when needed
+            if (!window.Chart) {
+                const module = await import('chart.js/auto');
+                window.Chart = module.default;
             }
 
             const data = @json($data);

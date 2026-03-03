@@ -131,7 +131,7 @@
                                     @foreach($device->photos as $photo)
                                         <label class="relative group cursor-pointer">
                                             <input type="checkbox" name="delete_photos[]" value="{{ $photo->id }}" class="absolute top-1 right-1 z-10 rounded border-red-400 text-red-500 focus:ring-red-400 opacity-0 group-hover:opacity-100 transition">
-                                            <img src="{{ route('device.photos.show', $photo) }}" alt="Foto" class="w-full h-24 object-cover rounded-lg border border-slate-200 group-hover:border-red-300 transition">
+                                            <img src="{{ route('device.photos.show', $photo) }}" alt="Foto del equipo {{ $device->name }}" class="w-full h-24 object-cover rounded-lg border border-slate-200 group-hover:border-red-300 transition">
                                             <span class="absolute bottom-1 left-1 text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition">Marcar para eliminar</span>
                                         </label>
                                     @endforeach
@@ -144,7 +144,7 @@
                                     @change="previews = [...$event.target.files].map(f => URL.createObjectURL(f))">
                                 <div x-show="previews.length" class="grid grid-cols-4 gap-3 mt-3">
                                     <template x-for="(src, i) in previews" :key="i">
-                                        <img :src="src" class="w-full h-24 object-cover rounded-lg border border-slate-200">
+                                        <img :src="src" alt="Vista previa de foto" class="w-full h-24 object-cover rounded-lg border border-slate-200">
                                     </template>
                                 </div>
                                 <x-input-error :messages="$errors->get('photos')" class="mt-2" />

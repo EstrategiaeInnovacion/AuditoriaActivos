@@ -13,13 +13,14 @@
         <title>{{ $title }}</title>
 
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
+        <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-[100] focus:px-6 focus:py-3 focus:bg-indigo-600 focus:text-white focus:font-semibold focus:rounded-br-lg focus:shadow-lg">Saltar al contenido principal</a>
         <div class="min-h-screen bg-slate-50 text-slate-900">
             <livewire:layout.navigation />
 
@@ -33,12 +34,12 @@
             @endif
 
             <!-- Page Content -->
-            <main>
+            <main id="main-content">
                 {{ $slot }}
             </main>
         </div>
 
-        <script>
+        <script defer>
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('/sw.js')

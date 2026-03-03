@@ -10,13 +10,13 @@
         @if(!$isScanning)
             <div class="w-full bg-white rounded-lg shadow-md p-6 text-center">
                 <div class="mb-4">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    <svg class="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
                 </div>
                 <h3 class="mt-2 text-sm font-medium text-gray-900">Escanear Activo</h3>
                 <p class="mt-1 text-sm text-gray-500">Activa la cámara para escanear el código QR.</p>
                 <div class="mt-6">
                     <button wire:click="startScanning" type="button" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <svg class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         Activar Cámara
                     </button>
                 </div>
@@ -67,8 +67,8 @@
                         <h4 class="font-bold text-gray-700 mb-3 text-center">Datos de Asignación</h4>
                         
                         <div class="mb-3">
-                            <label class="block text-sm font-medium text-gray-700">Empleado Responsable</label>
-                            <select wire:model="selectedUser" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <label for="qr-selected-user" class="block text-sm font-medium text-gray-700">Empleado Responsable</label>
+                            <select wire:model="selectedUser" id="qr-selected-user" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 <option value="">Selecciona un empleado...</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -78,8 +78,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="block text-sm font-medium text-gray-700">Tipo de Movimiento</label>
-                            <select wire:model.live="assignmentType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <label for="qr-assignment-type" class="block text-sm font-medium text-gray-700">Tipo de Movimiento</label>
+                            <select wire:model.live="assignmentType" id="qr-assignment-type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 <option value="asignacion_fija">Asignación Fija</option>
                                 <option value="prestamo_temporal">Préstamo Temporal (Por horas/días)</option>
                             </select>
@@ -87,15 +87,15 @@
 
                         @if($assignmentType === 'prestamo_temporal')
                             <div class="mb-3">
-                                <label class="block text-sm font-medium text-gray-700">Fecha y Hora de Devolución</label>
-                                <input type="datetime-local" wire:model="expectedReturnDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <label for="qr-return-date" class="block text-sm font-medium text-gray-700">Fecha y Hora de Devolución</label>
+                                <input type="datetime-local" wire:model="expectedReturnDate" id="qr-return-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 @error('expectedReturnDate') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         @endif
 
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700">Condiciones de Entrega (Opcional)</label>
-                            <textarea wire:model="deliveryConditions" rows="2" placeholder="Ej. Tiene un rayón en la pantalla..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                            <label for="qr-delivery-conditions" class="block text-sm font-medium text-gray-700">Condiciones de Entrega (Opcional)</label>
+                            <textarea wire:model="deliveryConditions" id="qr-delivery-conditions" rows="2" placeholder="Ej. Tiene un rayón en la pantalla..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
                         </div>
 
                         <div class="flex gap-2">
@@ -116,7 +116,8 @@
                                 <div class="border-t pt-4">
                                     <h4 class="font-bold text-gray-700 mb-3 text-center">⚡ Asignación Rápida</h4>
                                     <div class="mb-3">
-                                        <select wire:model="selectedUser" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        <label for="qr-quick-user" class="sr-only">Empleado Responsable</label>
+                                        <select wire:model="selectedUser" id="qr-quick-user" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                             <option value="">Selecciona un empleado...</option>
                                             @foreach($users as $user)
                                                 <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -174,17 +175,21 @@
         document.addEventListener('livewire:initialized', () => {
             let scanner = null;
 
-            function startScanner() {
+            async function startScanner() {
                 if (!document.getElementById('reader')) return;
                 
                 // Si ya existe una instancia, no crear otra
                 if (scanner) {
-                    // Si el elemento reader existe pero el scanner dice que no esta corriendo (estado inusual), limpiamos y reiniciamos
-                    // Pero generalmente, si scanner existe, asumimos que está corriendo o preparándose.
                     return; 
                 }
 
                 try {
+                    // Dynamically load html5-qrcode only when needed
+                    if (!window.Html5QrcodeScanner) {
+                        const module = await import('html5-qrcode');
+                        window.Html5QrcodeScanner = module.Html5QrcodeScanner;
+                    }
+
                     scanner = new Html5QrcodeScanner(
                         "reader", 
                         { fps: 10, qrbox: {width: 250, height: 250} },

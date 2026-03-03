@@ -129,7 +129,7 @@
                                 @change="previews = [...$event.target.files].map(f => URL.createObjectURL(f))">
                             <div x-show="previews.length" class="grid grid-cols-4 gap-3">
                                 <template x-for="(src, i) in previews" :key="i">
-                                    <img :src="src" class="w-full h-24 object-cover rounded-lg border border-slate-200">
+                                    <img :src="src" alt="Vista previa de foto" class="w-full h-24 object-cover rounded-lg border border-slate-200">
                                 </template>
                             </div>
                             <x-input-error :messages="$errors->get('photos')" class="mt-2" />
