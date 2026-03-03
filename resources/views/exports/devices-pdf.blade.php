@@ -24,7 +24,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>📦 Control de Activos</h1>
+        <h1>💻 Control de Activos</h1>
         <p>Reporte de Inventario — Generado el {{ now()->format('d/m/Y H:i') }}</p>
     </div>
 
