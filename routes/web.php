@@ -14,10 +14,10 @@ Route::view('profile', 'profile')
 
 use App\Http\Controllers\DeviceController;
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
     // Exports (must be before resource to avoid route conflict)
-    Route::get('export/devices/excel', [DeviceController::class , 'exportExcel'])->name('devices.export.excel');
-    Route::get('export/devices/pdf', [DeviceController::class , 'exportPdf'])->name('devices.export.pdf');
+    Route::get('export/devices/excel', [DeviceController::class , 'exportExcel'])->middleware('throttle:10,1')->name('devices.export.excel');
+    Route::get('export/devices/pdf', [DeviceController::class , 'exportPdf'])->middleware('throttle:10,1')->name('devices.export.pdf');
     Route::get('devices/print-multiple-qrs', [DeviceController::class , 'printMultipleQrs'])->name('devices.print-multiple-qrs');
 
     Route::resource('devices', DeviceController::class);

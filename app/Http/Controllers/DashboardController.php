@@ -32,12 +32,12 @@ class DashboardController extends Controller
             ->where('assigned_at', '<', now()->subDays(30))
             ->get();
 
-        // Monthly trend (last 6 months)
-        $monthlyTrend = Assignment::selectRaw("DATE_FORMAT(assigned_at, '%Y-%m') as month, count(*) as total")
-            ->where('assigned_at', '>=', now()->subMonths(6))
-            ->groupBy('month')
-            ->orderBy('month')
-            ->pluck('total', 'month');
+        // Monthly trend (last 6 months) — portable across databases
+        $monthlyTrend = Assignment::where('assigned_at', '>=', now()->subMonths(6))
+            ->get()
+            ->groupBy(fn($a) => $a->assigned_at->format('Y-m'))
+            ->map(fn($group) => $group->count())
+            ->sortKeys();
 
         return view('dashboard', compact(
             'totalDevices',
@@ -47,7 +47,7 @@ class DashboardController extends Controller
             'brokenDevices',
             'warrantyExpiring',
             'overdueLoans',
-            'monthlyTrend'
+            'monthlyTrend',
         ));
     }
 }

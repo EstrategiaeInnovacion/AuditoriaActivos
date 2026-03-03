@@ -217,4 +217,8 @@
             </div>
         </div>
     </div>
+    @push('scripts')
+    @vite('resources/js/chart-loader.js')
+    @vite('resources/js/qr-scanner-loader.js')
+    @endpush
 </x-app-layout>

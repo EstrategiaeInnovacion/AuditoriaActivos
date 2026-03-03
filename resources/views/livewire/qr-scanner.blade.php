@@ -175,7 +175,7 @@
         document.addEventListener('livewire:initialized', () => {
             let scanner = null;
 
-            async function startScanner() {
+            function startScanner() {
                 if (!document.getElementById('reader')) return;
                 
                 // Si ya existe una instancia, no crear otra
@@ -184,12 +184,6 @@
                 }
 
                 try {
-                    // Dynamically load html5-qrcode only when needed
-                    if (!window.Html5QrcodeScanner) {
-                        const module = await import('html5-qrcode');
-                        window.Html5QrcodeScanner = module.Html5QrcodeScanner;
-                    }
-
                     scanner = new Html5QrcodeScanner(
                         "reader", 
                         { fps: 10, qrbox: {width: 250, height: 250} },
@@ -214,7 +208,6 @@
             }
 
             function onScanSuccess(decodedText, decodedResult) {
-                console.log(`Code matched = ${decodedText}`, decodedResult);
                 @this.processQr(decodedText);
                 stopScanner();
             }

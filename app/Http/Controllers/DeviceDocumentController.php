@@ -12,7 +12,7 @@ class DeviceDocumentController extends Controller
     public function store(Request $request, Device $device)
     {
         $request->validate([
-            'document' => 'required|file|max:10240', // 10MB max
+            'document' => 'required|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
             'type' => 'required|in:factura,garantia,contrato,manual,otro',
         ]);
 
@@ -31,6 +31,10 @@ class DeviceDocumentController extends Controller
 
     public function download(DeviceDocument $document)
     {
+        // Verify the document's device exists and user has access
+        $document->loadMissing('device');
+        abort_unless($document->device, 404);
+
         return Storage::disk('private')->download(
             $document->file_path,
             $document->original_name
@@ -39,6 +43,10 @@ class DeviceDocumentController extends Controller
 
     public function destroy(DeviceDocument $document)
     {
+        // Verify the document's device exists and user has access
+        $document->loadMissing('device');
+        abort_unless($document->device, 404);
+
         Storage::disk('private')->delete($document->file_path);
         $document->delete();
 

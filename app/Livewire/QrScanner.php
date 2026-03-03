@@ -38,21 +38,18 @@ class QrScanner extends Component
         $this->isScanning = false; // Stop scanning after successful scan
         $this->scannedCode = $qrCode;
 
-        // Intentar extraer el UUID de la URL si es una URL válida
-        $uuid = basename($qrCode);
-
-        // Si no parece un UUID (ej. es una URL completa), intentamos buscar por UUID directamente si el string es solo el UUID
-        // Pero asumimos que el QR tiene la URL completa route('devices.show', uuid)
+        // Extraer el UUID de la URL del QR de forma segura
+        $parsed = parse_url($qrCode, PHP_URL_PATH);
+        $uuid = $parsed ? basename($parsed) : basename($qrCode);
 
         $this->device = Device::with('currentAssignment.user')->where('uuid', $uuid)->first();
 
         if ($this->device) {
             $this->message = "¡Equipo encontrado!";
-            // Cargamos todos los usuarios para el select del formulario
             $this->users = User::orderBy('name')->get();
         }
         else {
-            $this->message = "Código no reconocido en el sistema (UUID: $uuid).";
+            $this->message = "Código QR no reconocido en el sistema.";
         }
     }
 
@@ -73,20 +70,22 @@ class QrScanner extends Component
             'expectedReturnDate' => 'required_if:assignmentType,prestamo_temporal|nullable|date',
         ]);
 
-        // 2. Creamos el registro en la tabla assignments
+        // 2. Buscar usuario asignado (una sola vez)
+        $assignedUser = User::find($this->selectedUser);
+
+        // 3. Creamos el registro en la tabla assignments
         $assignment = Assignment::create([
             'user_id' => $this->selectedUser,
             'device_id' => $this->device->id,
-            'assigned_to' => User::find($this->selectedUser)->name,
+            'assigned_to' => $assignedUser->name,
             'assigned_at' => now(),
             'notes' => $this->deliveryConditions . ($this->assignmentType === 'prestamo_temporal' ? " (Devolución esperada: {$this->expectedReturnDate})" : ''),
         ]);
 
-        // 3. Actualizamos el estado del equipo físico
+        // 4. Actualizamos el estado del equipo físico
         $this->device->update(['status' => 'assigned']);
 
-        // 4. Notificar al usuario asignado
-        $assignedUser = User::find($this->selectedUser);
+        // 5. Notificar al usuario asignado
         if ($assignedUser) {
             $assignment->load('device');
             $assignedUser->notify(new \App\Notifications\DeviceAssigned($assignment));

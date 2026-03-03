@@ -57,7 +57,10 @@ class DeviceController extends Controller
             'photos.*' => 'nullable|image|max:20480',
         ]);
 
-        $deviceData = collect($validated)->except(['photos'])->toArray();
+        $deviceData = collect($validated)->only([
+            'name', 'brand', 'model', 'serial_number', 'type',
+            'status', 'purchase_date', 'warranty_expiration', 'notes',
+        ])->toArray();
         $device = Device::create($deviceData);
 
         if ($request->filled('username') || $request->filled('email')) {
@@ -114,9 +117,13 @@ class DeviceController extends Controller
             'photos' => 'nullable|array',
             'photos.*' => 'nullable|image|max:20480',
             'delete_photos' => 'nullable|array',
+            'delete_photos.*' => 'integer',
         ]);
 
-        $deviceData = collect($validated)->except(['photos', 'delete_photos'])->toArray();
+        $deviceData = collect($validated)->only([
+            'name', 'brand', 'model', 'serial_number', 'type',
+            'status', 'purchase_date', 'warranty_expiration', 'notes',
+        ])->toArray();
         $device->update($deviceData);
 
         if ($request->filled('username') || $request->filled('email')) {
@@ -159,8 +166,14 @@ class DeviceController extends Controller
 
     public function destroy(Device $device)
     {
+        $this->authorize('delete', $device);
+        if ($device->assignments()->whereNull('returned_at')->exists()) {
+            return redirect()->route('devices.index')
+                ->with('error', 'No se puede eliminar un dispositivo con asignaciones activas. Devuélvelo primero.');
+        }
+
         $device->delete();
-        return redirect()->route('devices.index')->with('success', 'Device deleted successfully.');
+        return redirect()->route('devices.index')->with('success', 'Dispositivo eliminado exitosamente.');
     }
 
     public function showPhoto(\App\Models\DevicePhoto $photo)
@@ -184,7 +197,7 @@ class DeviceController extends Controller
             return redirect()->route('devices.index')->with('error', 'No se seleccionaron dispositivos para imprimir.');
         }
 
-        $idArray = explode(',', $ids);
+        $idArray = array_slice(explode(',', $ids), 0, 50); // Max 50 IDs
         $devices = Device::whereIn('id', $idArray)->get();
 
         if ($devices->isEmpty()) {
@@ -228,7 +241,7 @@ class DeviceController extends Controller
             $query->where('status', $request->status);
         }
 
-        $devices = $query->get();
+        $devices = $query->take(1000)->get();
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.devices-pdf', compact('devices'))
             ->setPaper('letter', 'landscape');
