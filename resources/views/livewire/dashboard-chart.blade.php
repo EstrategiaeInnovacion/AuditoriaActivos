@@ -1,4 +1,4 @@
-<div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-full">
+<div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
     <h3 class="text-lg font-semibold text-slate-800 mb-4">Estado de Activos</h3>
     <div class="relative h-64 w-full">
         <canvas id="deviceStatusChart"></canvas>
