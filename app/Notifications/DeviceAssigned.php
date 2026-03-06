@@ -53,16 +53,16 @@ class DeviceAssigned extends Notification
         ];
     }
 
-    // Nuevo método para estructurar el mensaje de Telegram
     public function toTelegram(object $notifiable)
     {
         $device = $this->assignment->device;
         $fecha = $this->assignment->assigned_at->format('d/m/Y H:i');
 
         return TelegramMessage::create()
-            // REEMPLAZA ESTO: Pon el ID de tu chat de Telegram o grupo
-            ->to('-1234567890') 
-            ->content("*¡Nuevo Equipo Asignado!*\n\nHola {$notifiable->name}, se te ha asignado el equipo *{$device->name}* ({$device->brand} {$device->model}).\n\n*No. Serie:* {$device->serial_number}\n*Fecha:* {$fecha}")
+            // REEMPLAZA ESTO: Pon tu ID real aquí (ej. '128374659')
+            ->to('1106493545') 
+            // Cambiamos el texto para que sea un reporte de auditoría
+            ->content("*¡Registro de Nueva Asignación!*\n\nSe acaba de asignar el equipo *{$device->name}* ({$device->brand}) al usuario *{$notifiable->name}*.\n\n*No. Serie:* {$device->serial_number}\n*Fecha:* {$fecha}")
             ->button('Ver Equipo', url(route('devices.show', $device)));
     }
 }
