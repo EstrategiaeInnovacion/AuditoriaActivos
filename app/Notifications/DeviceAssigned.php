@@ -6,6 +6,9 @@ use App\Models\Assignment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+// Importaciones para Telegram
+use NotificationChannels\Telegram\TelegramChannel;
+use NotificationChannels\Telegram\TelegramMessage;
 
 class DeviceAssigned extends Notification
 {
@@ -20,7 +23,8 @@ class DeviceAssigned extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        // Se añade el canal de Telegram al arreglo
+        return ['mail', 'database', TelegramChannel::class];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -47,5 +51,18 @@ class DeviceAssigned extends Notification
             'device_id' => $device->id,
             'assignment_id' => $this->assignment->id,
         ];
+    }
+
+    // Nuevo método para estructurar el mensaje de Telegram
+    public function toTelegram(object $notifiable)
+    {
+        $device = $this->assignment->device;
+        $fecha = $this->assignment->assigned_at->format('d/m/Y H:i');
+
+        return TelegramMessage::create()
+            // REEMPLAZA ESTO: Pon el ID de tu chat de Telegram o grupo
+            ->to('-1234567890') 
+            ->content("*¡Nuevo Equipo Asignado!*\n\nHola {$notifiable->name}, se te ha asignado el equipo *{$device->name}* ({$device->brand} {$device->model}).\n\n*No. Serie:* {$device->serial_number}\n*Fecha:* {$fecha}")
+            ->button('Ver Equipo', url(route('devices.show', $device)));
     }
 }

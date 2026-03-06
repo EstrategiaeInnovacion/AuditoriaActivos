@@ -6,6 +6,8 @@ use App\Models\Device;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+// Importamos la fachada Notification para disparar alertas rápidas
+use Illuminate\Support\Facades\Notification;
 
 class DeviceController extends Controller
 {
@@ -124,7 +126,24 @@ class DeviceController extends Controller
             'name', 'brand', 'model', 'serial_number', 'type',
             'status', 'purchase_date', 'warranty_expiration', 'notes',
         ])->toArray();
+
+        // 1. Guardamos el estatus viejo antes de actualizar para comparar
+        $oldStatus = $device->status;
+
+        // 2. Actualizamos el dispositivo
         $device->update($deviceData);
+
+        // 3. Verificamos si el estatus cambió a uno crítico para avisar por Telegram
+        if ($oldStatus !== $device->status && in_array($device->status, ['broken', 'maintenance'])) {
+            /* * NOTA: Para que esto funcione, puedes crear una notificación nueva en tu terminal:
+             * php artisan make:notification AlertaEquipoDanado
+             * Y dentro configuras el canal de Telegram como en el DeviceAssigned.
+             * * Luego solo descomentas estas líneas:
+             */
+            
+            // Notification::route('telegram', '-1234567890') // Reemplazar con ID de chat admin
+            //     ->notify(new \App\Notifications\AlertaEquipoDanado($device));
+        }
 
         if ($request->filled('username') || $request->filled('email')) {
             $device->credential()->updateOrCreate(
