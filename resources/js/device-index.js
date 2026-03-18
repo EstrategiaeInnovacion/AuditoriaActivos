@@ -1,25 +1,24 @@
 /**
  * Device Index Page — selection, view toggle, and print QR functionality.
- * Loaded only on the devices index page.
+ * Works with both full page loads and Livewire SPA navigation.
  */
-(function initDeviceIndex() {
+(function() {
     const STORAGE_KEY = 'selectedDeviceIds';
     const VIEW_KEY = 'deviceViewMode';
-    
-    let selectAllCheckbox, deviceCheckboxes, printBtn, badge, clearBtn, selectionBar, tableView, gridView, toggleBtns, printUrl;
-    let isInitialized = false;
+    let initialized = false;
 
     function getElements() {
-        selectAllCheckbox = document.getElementById('select-all-devices');
-        deviceCheckboxes = document.querySelectorAll('.device-checkbox');
-        printBtn = document.getElementById('print-selected-qrs-btn');
-        badge = document.getElementById('selected-count-badge');
-        clearBtn = document.getElementById('clear-selection-btn');
-        selectionBar = document.getElementById('qr-selection-bar');
-        tableView = document.getElementById('table-view');
-        gridView = document.getElementById('grid-view');
-        toggleBtns = document.querySelectorAll('.view-toggle-btn');
-        printUrl = printBtn ? printBtn.dataset.printUrl : '';
+        return {
+            selectAllCheckbox: document.getElementById('select-all-devices'),
+            deviceCheckboxes: document.querySelectorAll('.device-checkbox'),
+            printBtn: document.getElementById('print-selected-qrs-btn'),
+            badge: document.getElementById('selected-count-badge'),
+            clearBtn: document.getElementById('clear-selection-btn'),
+            selectionBar: document.getElementById('qr-selection-bar'),
+            tableView: document.getElementById('table-view'),
+            gridView: document.getElementById('grid-view'),
+            toggleBtns: document.querySelectorAll('.view-toggle-btn'),
+        };
     }
 
     function getSelectedIds() {
@@ -34,78 +33,74 @@
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...idSet]));
     }
 
-    function setView(mode) {
-        localStorage.setItem(VIEW_KEY, mode);
-        if (mode === 'grid') {
-            tableView.classList.add('hidden');
-            gridView.classList.remove('hidden');
-        } else {
-            tableView.classList.remove('hidden');
-            gridView.classList.add('hidden');
-        }
-        toggleBtns.forEach(btn => {
-            const isActive = btn.dataset.view === mode;
-            btn.classList.toggle('bg-slate-800', isActive);
-            btn.classList.toggle('text-white', isActive);
-            btn.classList.toggle('text-slate-500', !isActive);
-            btn.classList.toggle('hover:text-slate-700', !isActive);
-            btn.classList.toggle('hover:bg-slate-100', !isActive);
-        });
-        restoreCheckboxes();
-    }
-
-    function getVisibleCheckboxes() {
-        const activeView = gridView.classList.contains('hidden') ? tableView : gridView;
-        return Array.from(activeView.querySelectorAll('.device-checkbox'));
-    }
-
-    function updateUI() {
-        if (!badge || !selectionBar || !printBtn || !clearBtn || !selectAllCheckbox) return;
+    function init() {
+        const els = getElements();
         
-        const selectedIds = getSelectedIds();
-        const totalCount = selectedIds.size;
+        if (!els.selectAllCheckbox || els.deviceCheckboxes.length === 0) {
+            return false;
+        }
 
-        badge.textContent = totalCount;
-        selectionBar.classList.toggle('hidden', totalCount === 0);
-        printBtn.disabled = totalCount === 0;
-        clearBtn.classList.toggle('hidden', totalCount === 0);
+        const { selectAllCheckbox, deviceCheckboxes, printBtn, badge, clearBtn, selectionBar, tableView, gridView, toggleBtns } = els;
+        const printUrl = printBtn ? printBtn.dataset.printUrl : '';
 
-        const visibleCheckboxes = getVisibleCheckboxes();
-        const allOnPageChecked = visibleCheckboxes.length > 0 &&
-            visibleCheckboxes.every(cb => cb.checked);
-        selectAllCheckbox.checked = allOnPageChecked;
-    }
+        function getVisibleCheckboxes() {
+            const activeView = gridView.classList.contains('hidden') ? tableView : gridView;
+            return Array.from(activeView.querySelectorAll('.device-checkbox'));
+        }
 
-    function restoreCheckboxes() {
-        const selectedIds = getSelectedIds();
-        deviceCheckboxes.forEach(cb => {
-            cb.checked = selectedIds.has(cb.value);
-        });
-        updateUI();
-    }
+        function updateUI() {
+            const selectedIds = getSelectedIds();
+            const totalCount = selectedIds.size;
+            badge.textContent = totalCount;
+            selectionBar.classList.toggle('hidden', totalCount === 0);
+            printBtn.disabled = totalCount === 0;
+            clearBtn.classList.toggle('hidden', totalCount === 0);
+            const visibleCheckboxes = getVisibleCheckboxes();
+            selectAllCheckbox.checked = visibleCheckboxes.length > 0 && visibleCheckboxes.every(cb => cb.checked);
+        }
 
-    function syncCheckbox(value, checked) {
-        deviceCheckboxes.forEach(cb => {
-            if (cb.value === value) cb.checked = checked;
-        });
-    }
+        function restoreCheckboxes() {
+            const selectedIds = getSelectedIds();
+            deviceCheckboxes.forEach(cb => {
+                cb.checked = selectedIds.has(cb.value);
+            });
+            updateUI();
+        }
 
-    function attachEvents() {
+        function syncCheckbox(value, checked) {
+            deviceCheckboxes.forEach(cb => {
+                if (cb.value === value) cb.checked = checked;
+            });
+        }
+
+        function setView(mode) {
+            localStorage.setItem(VIEW_KEY, mode);
+            if (mode === 'grid') {
+                tableView.classList.add('hidden');
+                gridView.classList.remove('hidden');
+            } else {
+                tableView.classList.remove('hidden');
+                gridView.classList.add('hidden');
+            }
+            toggleBtns.forEach(btn => {
+                const isActive = btn.dataset.view === mode;
+                btn.classList.toggle('bg-slate-800', isActive);
+                btn.classList.toggle('text-white', isActive);
+                btn.classList.toggle('text-slate-500', !isActive);
+            });
+            restoreCheckboxes();
+        }
+
         toggleBtns.forEach(btn => {
             btn.addEventListener('click', () => setView(btn.dataset.view));
         });
 
         selectAllCheckbox.addEventListener('change', function () {
             const selectedIds = getSelectedIds();
-            const visibleCheckboxes = getVisibleCheckboxes();
-            visibleCheckboxes.forEach(cb => {
+            getVisibleCheckboxes().forEach(cb => {
                 cb.checked = this.checked;
                 syncCheckbox(cb.value, this.checked);
-                if (this.checked) {
-                    selectedIds.add(cb.value);
-                } else {
-                    selectedIds.delete(cb.value);
-                }
+                this.checked ? selectedIds.add(cb.value) : selectedIds.delete(cb.value);
             });
             saveSelectedIds(selectedIds);
             updateUI();
@@ -114,51 +109,39 @@
         deviceCheckboxes.forEach(cb => {
             cb.addEventListener('change', function () {
                 const selectedIds = getSelectedIds();
-                if (this.checked) {
-                    selectedIds.add(this.value);
-                } else {
-                    selectedIds.delete(this.value);
-                }
+                this.checked ? selectedIds.add(this.value) : selectedIds.delete(this.value);
                 syncCheckbox(this.value, this.checked);
                 saveSelectedIds(selectedIds);
                 updateUI();
             });
         });
 
-        if (printBtn) {
-            printBtn.addEventListener('click', function () {
-                const selectedIds = getSelectedIds();
-                if (selectedIds.size > 0) {
-                    const idsParam = [...selectedIds].join(',');
-                    const url = `${printUrl}?ids=${idsParam}`;
-                    window.open(url, '_blank');
-                    sessionStorage.removeItem(STORAGE_KEY);
-                    deviceCheckboxes.forEach(cb => cb.checked = false);
-                    updateUI();
-                }
-            });
-        }
-
-        if (clearBtn) {
-            clearBtn.addEventListener('click', function () {
+        printBtn.addEventListener('click', function () {
+            const selectedIds = getSelectedIds();
+            if (selectedIds.size > 0) {
+                window.open(`${printUrl}?ids=${[...selectedIds].join(',')}`, '_blank');
                 sessionStorage.removeItem(STORAGE_KEY);
                 deviceCheckboxes.forEach(cb => cb.checked = false);
-                selectAllCheckbox.checked = false;
                 updateUI();
-                if (selectionBar) selectionBar.classList.add('hidden');
-            });
-        }
+            }
+        });
+
+        clearBtn.addEventListener('click', function () {
+            sessionStorage.removeItem(STORAGE_KEY);
+            deviceCheckboxes.forEach(cb => cb.checked = false);
+            selectAllCheckbox.checked = false;
+            updateUI();
+            selectionBar.classList.add('hidden');
+        });
+
+        setView(localStorage.getItem(VIEW_KEY) || 'table');
+        initialized = true;
+        return true;
     }
 
-    function init() {
-        if (isInitialized) return;
-        getElements();
-        
-        if (!selectAllCheckbox || !deviceCheckboxes.length) return;
-        
-        isInitialized = true;
-        attachEvents();
-        setView(localStorage.getItem(VIEW_KEY) || 'table');
+    function handleNavigation() {
+        initialized = false;
+        setTimeout(init, 50);
     }
 
     if (document.readyState === 'loading') {
@@ -167,5 +150,6 @@
         init();
     }
 
-    document.addEventListener('livewire:navigated', init);
+    document.addEventListener('livewire:navigating', handleNavigation);
+    document.addEventListener('livewire:navigated', handleNavigation);
 })();
