@@ -169,77 +169,76 @@
 
 
     <script>
-        document.addEventListener('livewire:initialized', () => {
-            let scanner = null;
+        let scanner = null;
 
-            function startScanner() {
-                if (!document.getElementById('reader')) return;
+        function startScanner() {
+            if (!document.getElementById('reader')) return;
+            
+            if (typeof Html5QrcodeScanner === 'undefined') {
+                setTimeout(startScanner, 100);
+                return;
+            }
+            
+            if (scanner) return;
+
+            try {
+                scanner = new Html5QrcodeScanner(
+                    "reader", 
+                    { fps: 10, qrbox: {width: 250, height: 250} },
+                    false
+                );
                 
-                // Si ya existe una instancia, no crear otra
-                if (scanner) {
-                    return; 
-                }
-
-                try {
-                    scanner = new Html5QrcodeScanner(
-                        "reader", 
-                        { fps: 10, qrbox: {width: 250, height: 250} },
-                        /* verbose= */ false
-                    );
-                    
-                    scanner.render(onScanSuccess, onScanFailure);
-                } catch (e) {
-                    console.error("Error al iniciar el scanner:", e);
-                }
+                scanner.render(onScanSuccess, onScanFailure);
+            } catch (e) {
+                console.error("Error al iniciar el scanner:", e);
             }
+        }
 
-            function stopScanner() {
-                if (scanner) {
-                    scanner.clear().then(() => {
-                        scanner = null;
-                    }).catch(error => {
-                        console.error("Error al detener el scanner:", error);
-                        scanner = null; // Forzar null aunque falle
-                    });
-                }
+        function stopScanner() {
+            if (scanner) {
+                scanner.clear().then(() => {
+                    scanner = null;
+                }).catch(error => {
+                    console.error("Error al detener el scanner:", error);
+                    scanner = null;
+                });
             }
+        }
 
-            function onScanSuccess(decodedText, decodedResult) {
-                @this.processQr(decodedText);
-                stopScanner();
-            }
+        function onScanSuccess(decodedText, decodedResult) {
+            @this.processQr(decodedText);
+            stopScanner();
+        }
 
-            function onScanFailure(error) {
-                // Ignore errors mostly
-            }
+        function onScanFailure(error) {
+            // Ignore errors mostly
+        }
 
-            // Iniciar si ya está el elemento presente (ej. al recargar página con estado guardado)
+        document.addEventListener('DOMContentLoaded', () => {
             startScanner();
 
-            // Escuchar actualizaciones de Livewire
             Livewire.hook('morph.updated', ({ el, component }) => {
-                // Verificamos si el elemento 'reader' está presente en el DOM
                 if (document.getElementById('reader')) {
                     startScanner();
                 } else {
-                    // Si el elemento desapareció (por ejemplo, isScanning = false), asegúrate de liberar la cámara
                     stopScanner();
                 }
             });
 
-            // Limpieza al salir
             Livewire.hook('element.removed', ({ el, component }) => {
-                 // Si el componente se elimina, liberamos
-                 stopScanner();
+                stopScanner();
             });
+        });
 
-            // Auto-scan en modo rápido
-            Livewire.on('auto-scan-next', () => {
-                setTimeout(() => {
-                    @this.resetScanner();
-                    @this.startScanning();
-                }, 1500);
-            });
+        Livewire.directive('scanner-ready', ({ el, component, cleanup }) => {
+            startScanner();
+        });
+
+        Livewire.on('auto-scan-next', () => {
+            setTimeout(() => {
+                @this.resetScanner();
+                @this.startScanning();
+            }, 1500);
         });
     </script>
 </div>

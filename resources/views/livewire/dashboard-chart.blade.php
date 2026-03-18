@@ -12,9 +12,14 @@
     </div>
 
     <script>
-        document.addEventListener('livewire:navigated', () => {
+        function initDeviceChart() {
             const ctx = document.getElementById('deviceStatusChart');
             if (!ctx) return;
+
+            if (typeof Chart === 'undefined') {
+                setTimeout(initDeviceChart, 100);
+                return;
+            }
 
             if (window.myDeviceChart) {
                 window.myDeviceChart.destroy();
@@ -82,6 +87,10 @@
                     }
                 }
             });
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', initDeviceChart);
+        document.addEventListener('livewire:navigated', initDeviceChart);
+        document.addEventListener('livewire:init', initDeviceChart);
     </script>
 </div>
