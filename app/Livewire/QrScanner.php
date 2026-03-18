@@ -26,6 +26,7 @@ class QrScanner extends Component
     public function startScanning()
     {
         $this->isScanning = true;
+        $this->dispatch('scanner-started');
     }
 
     public function toggleQuickMode()

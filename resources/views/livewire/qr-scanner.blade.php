@@ -173,14 +173,16 @@
 
         function startScanner() {
             const readerEl = document.getElementById('reader');
-            if (!readerEl) return;
+            if (!readerEl) {
+                return false;
+            }
             
             if (typeof Html5QrcodeScanner === 'undefined') {
                 setTimeout(startScanner, 100);
-                return;
+                return false;
             }
             
-            if (scanner) return;
+            if (scanner) return true;
 
             try {
                 scanner = new Html5QrcodeScanner(
@@ -190,8 +192,10 @@
                 );
                 
                 scanner.render(onScanSuccess, onScanFailure);
+                return true;
             } catch (e) {
                 console.error("Error al iniciar el scanner:", e);
+                return false;
             }
         }
 
@@ -199,8 +203,7 @@
             if (scanner) {
                 scanner.clear().then(() => {
                     scanner = null;
-                }).catch(error => {
-                    console.error("Error al detener el scanner:", error);
+                }).catch(() => {
                     scanner = null;
                 });
             }
@@ -212,39 +215,24 @@
         }
 
         function onScanFailure(error) {
-            // Ignore errors mostly
+            // Ignore
         }
 
-        function observeReader() {
-            const readerEl = document.getElementById('reader');
-            if (!readerEl) return;
-
-            const observer = new MutationObserver((mutations) => {
-                for (const mutation of mutations) {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                        const isVisible = readerEl.offsetParent !== null;
-                        if (isVisible && readerEl.querySelector('.qr-scope') === null) {
-                            startScanner();
-                        }
-                    }
-                }
-            });
-
-            observer.observe(readerEl, { attributes: true });
-
-            if (readerEl.offsetParent !== null && readerEl.querySelector('.qr-scope') === null) {
-                startScanner();
+        function tryStartScanner() {
+            const started = startScanner();
+            if (!started) {
+                setTimeout(tryStartScanner, 100);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            observeReader();
+        document.addEventListener('DOMContentLoaded', tryStartScanner);
+
+        Livewire.hook('morph', ({ el }) => {
+            setTimeout(tryStartScanner, 200);
         });
 
-        Livewire.hook('morph.updated', ({ el, component }) => {
-            if (document.getElementById('reader')) {
-                observeReader();
-            }
+        Livewire.on('scanner-started', () => {
+            setTimeout(tryStartScanner, 200);
         });
 
         Livewire.on('auto-scan-next', () => {
