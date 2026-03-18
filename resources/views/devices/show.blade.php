@@ -1,7 +1,7 @@
 <x-app-layout title="Detalles del Activo">
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+            <h2 class="font-bold text-xl text-white leading-tight">
                 {{ $device->name }}
             </h2>
             <div class="flex flex-wrap gap-2">

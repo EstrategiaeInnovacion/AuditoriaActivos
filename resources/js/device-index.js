@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const printBtn = document.getElementById('print-selected-qrs-btn');
     const badge = document.getElementById('selected-count-badge');
     const clearBtn = document.getElementById('clear-selection-btn');
+    const selectionBar = document.getElementById('qr-selection-bar');
     const tableView = document.getElementById('table-view');
     const gridView = document.getElementById('grid-view');
     const toggleBtns = document.querySelectorAll('.view-toggle-btn');
@@ -65,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const totalCount = selectedIds.size;
 
         badge.textContent = totalCount;
-        badge.classList.toggle('hidden', totalCount === 0);
+        selectionBar.classList.toggle('hidden', totalCount === 0);
         printBtn.disabled = totalCount === 0;
         clearBtn.classList.toggle('hidden', totalCount === 0);
 
@@ -145,6 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
         deviceCheckboxes.forEach(cb => cb.checked = false);
         selectAllCheckbox.checked = false;
         updateUI();
+        selectionBar.classList.add('hidden');
     });
 
     // Inicializar

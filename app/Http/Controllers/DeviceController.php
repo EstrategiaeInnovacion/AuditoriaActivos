@@ -2,36 +2,50 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DeviceExport;
 use App\Models\Device;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Models\DevicePhoto;
+use App\Notifications\AlertaEquipoDanado;
 // Importamos la fachada Notification para disparar alertas rápidas
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class DeviceController extends Controller
 {
     public function index(Request $request)
     {
-        $devices = Device::query()
-            ->when($request->search, fn($q, $s) => $q->where(function ($q) use ($s) {
-            $q->where('name', 'like', "%{$s}%")
-                ->orWhere('serial_number', 'like', "%{$s}%")
-                ->orWhere('brand', 'like', "%{$s}%");
-        }
-        ))
-            ->when($request->type, fn($q, $t) => $q->where('type', $t))
-            ->when($request->status, fn($q, $s) => $q->where('status', $s))
+        $query = Device::query()
+            ->when($request->search, fn ($q, $s) => $q->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")
+                    ->orWhere('serial_number', 'like', "%{$s}%")
+                    ->orWhere('brand', 'like', "%{$s}%");
+            }
+            ))
+            ->when($request->type, fn ($q, $t) => $q->where('type', $t))
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->sort, function ($q) use ($request) {
-            $allowed = ['name', 'brand', 'serial_number', 'type', 'status', 'created_at'];
-            $col = in_array($request->sort, $allowed) ? $request->sort : 'created_at';
-            $dir = $request->direction === 'asc' ? 'asc' : 'desc';
-            return $q->orderBy($col, $dir);
-        }, fn($q) => $q->latest())
-            ->paginate(10)
-            ->withQueryString();
+                $allowed = ['name', 'brand', 'serial_number', 'type', 'status', 'created_at'];
+                $col = in_array($request->sort, $allowed) ? $request->sort : 'created_at';
+                $dir = $request->direction === 'asc' ? 'asc' : 'desc';
 
-        return view('devices.index', compact('devices'));
+                return $q->orderBy($col, $dir);
+            }, fn ($q) => $q->latest());
+
+        $stats = [
+            'total' => $query->count(),
+            'available' => (clone $query)->where('status', 'available')->count(),
+            'assigned' => (clone $query)->where('status', 'assigned')->count(),
+            'maintenance' => (clone $query)->where('status', 'maintenance')->count(),
+            'broken' => (clone $query)->where('status', 'broken')->count(),
+        ];
+
+        $devices = $query->paginate(10)->withQueryString();
+
+        return view('devices.index', compact('devices', 'stats'));
     }
 
     public function create()
@@ -77,7 +91,7 @@ class DeviceController extends Controller
         // Upload photos
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('device-photos/' . $device->id, 'private');
+                $path = $photo->store('device-photos/'.$device->id, 'private');
                 $device->photos()->create([
                     'file_path' => $path,
                     'uploaded_by' => auth()->id(),
@@ -91,12 +105,14 @@ class DeviceController extends Controller
     public function show(Device $device)
     {
         $device->load(['credential', 'assignments.user', 'photos', 'documents']);
+
         return view('devices.show', compact('device'));
     }
 
     public function edit(Device $device)
     {
         $device->load('credential');
+
         return view('devices.edit', compact('device'));
     }
 
@@ -106,7 +122,7 @@ class DeviceController extends Controller
             'name' => 'required|string|max:255',
             'brand' => 'required|string|max:255',
             'model' => 'required|string|max:255',
-            'serial_number' => 'required|string|unique:devices,serial_number,' . $device->id,
+            'serial_number' => 'required|string|unique:devices,serial_number,'.$device->id,
             'type' => 'required|in:computer,peripheral,printer,other',
             'status' => 'required|in:available,assigned,maintenance,broken',
             'purchase_date' => 'nullable|date',
@@ -135,28 +151,20 @@ class DeviceController extends Controller
 
         // 3. Verificamos si el estatus cambió a uno crítico para avisar por Telegram
         if ($oldStatus !== $device->status && in_array($device->status, ['broken', 'maintenance'])) {
-            /* * NOTA: Para que esto funcione, puedes crear una notificación nueva en tu terminal:
-             * php artisan make:notification AlertaEquipoDanado
-             * Y dentro configuras el canal de Telegram como en el DeviceAssigned.
-             * * Luego solo descomentas estas líneas:
-             */
-            
-            // Notification::route('telegram', '-1234567890') // Reemplazar con ID de chat admin
-            //     ->notify(new \App\Notifications\AlertaEquipoDanado($device));
+            $device->notify(new AlertaEquipoDanado($device, $oldStatus, $device->status));
         }
 
         if ($request->filled('username') || $request->filled('email')) {
             $device->credential()->updateOrCreate(
-            ['device_id' => $device->id],
-            [
-                'username' => $request->username,
-                'password' => $request->password,
-                'email' => $request->email,
-                'email_password' => $request->email_password,
-            ]
+                ['device_id' => $device->id],
+                [
+                    'username' => $request->username,
+                    'password' => $request->password,
+                    'email' => $request->email,
+                    'email_password' => $request->email_password,
+                ]
             );
-        }
-        elseif ($device->credential) {
+        } elseif ($device->credential) {
             $device->credential()->delete();
         }
 
@@ -172,7 +180,7 @@ class DeviceController extends Controller
         // Upload new photos
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('device-photos/' . $device->id, 'private');
+                $path = $photo->store('device-photos/'.$device->id, 'private');
                 $device->photos()->create([
                     'file_path' => $path,
                     'uploaded_by' => auth()->id(),
@@ -192,27 +200,30 @@ class DeviceController extends Controller
         }
 
         $device->delete();
+
         return redirect()->route('devices.index')->with('success', 'Dispositivo eliminado exitosamente.');
     }
 
-    public function showPhoto(\App\Models\DevicePhoto $photo)
+    public function showPhoto(DevicePhoto $photo)
     {
-        if (!Storage::disk('private')->exists($photo->file_path)) {
+        if (! Storage::disk('private')->exists($photo->file_path)) {
             abort(404);
         }
+
         return Storage::disk('private')->response($photo->file_path);
     }
 
     public function printQr(Device $device)
     {
         $qrCode = QrCode::size(200)->generate(route('devices.show', $device->uuid));
+
         return view('devices.print-qr', compact('device', 'qrCode'));
     }
 
     public function printMultipleQrs(Request $request)
     {
         $ids = $request->input('ids');
-        if (!$ids) {
+        if (! $ids) {
             return redirect()->route('devices.index')->with('error', 'No se seleccionaron dispositivos para imprimir.');
         }
 
@@ -226,6 +237,7 @@ class DeviceController extends Controller
         // Generate QRs for each device
         $devicesWithQr = $devices->map(function ($device) {
             $device->qrCode = QrCode::size(200)->generate(route('devices.show', $device->uuid));
+
             return $device;
         });
 
@@ -234,9 +246,9 @@ class DeviceController extends Controller
 
     public function exportExcel(Request $request)
     {
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\DeviceExport($request->search, $request->type, $request->status, $request->has('include_credentials')),
-            'inventario-activos-' . now()->format('Y-m-d') . '.xlsx'
+        return Excel::download(
+            new DeviceExport($request->search, $request->type, $request->status, $request->has('include_credentials')),
+            'inventario-activos-'.now()->format('Y-m-d').'.xlsx'
         );
     }
 
@@ -267,9 +279,9 @@ class DeviceController extends Controller
         $devices = $query->take(1000)->get();
         $includeCredentials = $request->has('include_credentials');
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.devices-pdf', compact('devices', 'includeCredentials'))
+        $pdf = Pdf::loadView('exports.devices-pdf', compact('devices', 'includeCredentials'))
             ->setPaper('letter', 'landscape');
 
-        return $pdf->download('inventario-activos-' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->download('inventario-activos-'.now()->format('Y-m-d').'.pdf');
     }
 }
