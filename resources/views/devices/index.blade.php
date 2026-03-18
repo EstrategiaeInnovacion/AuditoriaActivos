@@ -325,7 +325,5 @@
         </div>
     </div>
 
-    @push('scripts')
     @vite('resources/js/device-index.js')
-    @endpush
 </x-app-layout>
