@@ -172,7 +172,8 @@
         let scanner = null;
 
         function startScanner() {
-            if (!document.getElementById('reader')) return;
+            const readerEl = document.getElementById('reader');
+            if (!readerEl) return;
             
             if (typeof Html5QrcodeScanner === 'undefined') {
                 setTimeout(startScanner, 100);
@@ -214,24 +215,36 @@
             // Ignore errors mostly
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            startScanner();
+        function observeReader() {
+            const readerEl = document.getElementById('reader');
+            if (!readerEl) return;
 
-            Livewire.hook('morph.updated', ({ el, component }) => {
-                if (document.getElementById('reader')) {
-                    startScanner();
-                } else {
-                    stopScanner();
+            const observer = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        const isVisible = readerEl.offsetParent !== null;
+                        if (isVisible && readerEl.querySelector('.qr-scope') === null) {
+                            startScanner();
+                        }
+                    }
                 }
             });
 
-            Livewire.hook('element.removed', ({ el, component }) => {
-                stopScanner();
-            });
+            observer.observe(readerEl, { attributes: true });
+
+            if (readerEl.offsetParent !== null && readerEl.querySelector('.qr-scope') === null) {
+                startScanner();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            observeReader();
         });
 
-        Livewire.directive('scanner-ready', ({ el, component, cleanup }) => {
-            startScanner();
+        Livewire.hook('morph.updated', ({ el, component }) => {
+            if (document.getElementById('reader')) {
+                observeReader();
+            }
         });
 
         Livewire.on('auto-scan-next', () => {
