@@ -35,10 +35,10 @@ class DashboardController extends Controller
 
         $monthlyTrend = Cache::remember('dashboard_monthly_trend', 300, function () {
             return Assignment::query()
-                ->selectRaw("strftime('%Y-%m', assigned_at) as month, count(*) as total")
+                ->selectRaw("DATE_FORMAT(assigned_at, '%Y-%m') as month, count(*) as total")
                 ->where('assigned_at', '>=', now()->subMonths(6))
-                ->groupByRaw("strftime('%Y-%m', assigned_at)")
-                ->orderByRaw("strftime('%Y-%m', assigned_at)")
+                ->groupByRaw("DATE_FORMAT(assigned_at, '%Y-%m')")
+                ->orderByRaw("DATE_FORMAT(assigned_at, '%Y-%m')")
                 ->pluck('total', 'month');
         });
 
