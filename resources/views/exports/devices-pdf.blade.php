@@ -7,12 +7,13 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11px; color: #1e293b; }
         .header { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #4f46e5; padding-bottom: 15px; }
-        .header h1 { font-size: 22px; color: #4f46e5; margin-bottom: 4px; }
+        .header h1 { font-size: 22px; color: #4f46e5; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .header p { font-size: 11px; color: #64748b; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { background-color: #4f46e5; color: #fff; font-weight: 600; text-align: left; padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
         td { padding: 7px 10px; border-bottom: 1px solid #e2e8f0; }
         tr:nth-child(even) { background-color: #f8fafc; }
+        tr:hover { background-color: #f1f5f9; }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 600; }
         .badge-available { background: #dcfce7; color: #166534; }
         .badge-assigned { background: #dbeafe; color: #1e40af; }
@@ -20,11 +21,15 @@
         .badge-broken { background: #fee2e2; color: #991b1b; }
         .footer { margin-top: 20px; text-align: center; font-size: 9px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 10px; }
         .meta { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 10px; color: #64748b; }
+        .icon { width: 20px; height: 20px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>💻 Control de Activos</h1>
+        <h1>
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+            Control de Activos
+        </h1>
         <p>Reporte de Inventario — Generado el {{ now()->format('d/m/Y H:i') }}</p>
     </div>
 

@@ -2,104 +2,66 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\DeviceExport;
+use App\Enums\DeviceStatus;
+use App\Http\Requests\StoreDeviceRequest;
+use App\Http\Requests\UpdateDeviceRequest;
 use App\Models\Device;
 use App\Models\DevicePhoto;
 use App\Notifications\AlertaEquipoDanado;
-// Importamos la fachada Notification para disparar alertas rápidas
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\AuditService;
+use App\Services\DeviceService;
+use App\Services\ExportService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class DeviceController extends Controller
 {
+    public function __construct(
+        protected DeviceService $deviceService,
+        protected ExportService $exportService
+    ) {}
+
     public function index(Request $request)
     {
-        $query = Device::query()
-            ->when($request->search, fn ($q, $s) => $q->where(function ($q) use ($s) {
-                $q->where('name', 'like', "%{$s}%")
-                    ->orWhere('serial_number', 'like', "%{$s}%")
-                    ->orWhere('brand', 'like', "%{$s}%");
-            }
-            ))
-            ->when($request->type, fn ($q, $t) => $q->where('type', $t))
-            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
-            ->when($request->sort, function ($q) use ($request) {
-                $allowed = ['name', 'brand', 'serial_number', 'type', 'status', 'created_at'];
-                $col = in_array($request->sort, $allowed) ? $request->sort : 'created_at';
-                $dir = $request->direction === 'asc' ? 'asc' : 'desc';
-
-                return $q->orderBy($col, $dir);
-            }, fn ($q) => $q->latest());
-
-        $stats = [
-            'total' => $query->count(),
-            'available' => (clone $query)->where('status', 'available')->count(),
-            'assigned' => (clone $query)->where('status', 'assigned')->count(),
-            'maintenance' => (clone $query)->where('status', 'maintenance')->count(),
-            'broken' => (clone $query)->where('status', 'broken')->count(),
-        ];
-
-        $devices = $query->paginate(10)->withQueryString();
+        $devices = $this->deviceService->getDevicesPaginated($request);
+        $stats = $this->deviceService->getDeviceStats($request);
 
         return view('devices.index', compact('devices', 'stats'));
     }
 
     public function create()
     {
+        Gate::authorize('create', Device::class);
+
         return view('devices.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreDeviceRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'brand' => 'required|string|max:255',
-            'model' => 'required|string|max:255',
-            'serial_number' => 'required|string|unique:devices',
-            'type' => 'required|in:computer,peripheral,printer,other',
-            'status' => 'required|in:available,assigned,maintenance,broken',
-            'purchase_date' => 'nullable|date',
-            'warranty_expiration' => 'nullable|date',
-            'notes' => 'nullable|string',
-            'username' => 'nullable|string|max:255',
-            'password' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'email_password' => 'nullable|string|max:255',
-            'photos' => 'nullable|array',
-            'photos.*' => 'nullable|image|max:20480',
-        ]);
+        Gate::authorize('create', Device::class);
 
-        $deviceData = collect($validated)->only([
-            'name', 'brand', 'model', 'serial_number', 'type',
-            'status', 'purchase_date', 'warranty_expiration', 'notes',
-        ])->toArray();
-        $device = Device::create($deviceData);
+        $validated = $request->validated();
 
-        if ($request->filled('username') || $request->filled('email')) {
-            $device->credential()->create([
-                'username' => $request->username,
-                'password' => $request->password,
-                'email' => $request->email,
-                'email_password' => $request->email_password,
-            ]);
+        try {
+            $device = DB::transaction(function () use ($validated): Device {
+                $device = $this->deviceService->createDevice($validated);
+
+                if ($request->hasFile('photos')) {
+                    $this->deviceService->processPhotosUpload($device, $request->file('photos'));
+                }
+
+                return $device;
+            });
+
+            return redirect()->route('devices.index')->with('success', 'Dispositivo creado exitosamente.');
+        } catch (\Exception $e) {
+            report($e);
+
+            return redirect()->back()->with('error', 'Error al crear el dispositivo.')->withInput();
         }
-
-        // Upload photos
-        if ($request->hasFile('photos')) {
-            foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('device-photos/'.$device->id, 'private');
-                $device->photos()->create([
-                    'file_path' => $path,
-                    'uploaded_by' => auth()->id(),
-                ]);
-            }
-        }
-
-        return redirect()->route('devices.index')->with('success', 'Dispositivo creado exitosamente.');
     }
 
     public function show(Device $device)
@@ -111,106 +73,73 @@ class DeviceController extends Controller
 
     public function edit(Device $device)
     {
-        $device->load('credential');
+        Gate::authorize('update', $device);
+
+        $device = $this->deviceService->getDeviceForEdit($device);
 
         return view('devices.edit', compact('device'));
     }
 
-    public function update(Request $request, Device $device)
+    public function update(UpdateDeviceRequest $request, Device $device)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'brand' => 'required|string|max:255',
-            'model' => 'required|string|max:255',
-            'serial_number' => 'required|string|unique:devices,serial_number,'.$device->id,
-            'type' => 'required|in:computer,peripheral,printer,other',
-            'status' => 'required|in:available,assigned,maintenance,broken',
-            'purchase_date' => 'nullable|date',
-            'warranty_expiration' => 'nullable|date',
-            'notes' => 'nullable|string',
-            'username' => 'nullable|string|max:255',
-            'password' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'email_password' => 'nullable|string|max:255',
-            'photos' => 'nullable|array',
-            'photos.*' => 'nullable|image|max:20480',
-            'delete_photos' => 'nullable|array',
-            'delete_photos.*' => 'integer',
-        ]);
+        Gate::authorize('update', $device);
 
-        $deviceData = collect($validated)->only([
-            'name', 'brand', 'model', 'serial_number', 'type',
-            'status', 'purchase_date', 'warranty_expiration', 'notes',
-        ])->toArray();
-
-        // 1. Guardamos el estatus viejo antes de actualizar para comparar
+        $validated = $request->validated();
         $oldStatus = $device->status;
 
-        // 2. Actualizamos el dispositivo
-        $device->update($deviceData);
+        try {
+            DB::transaction(function () use ($validated, $request, $device): void {
+                $this->deviceService->updateDevice($device, $validated);
 
-        // 3. Verificamos si el estatus cambió a uno crítico para avisar por Telegram
-        if ($oldStatus !== $device->status && in_array($device->status, ['broken', 'maintenance'])) {
-            $device->notify(new AlertaEquipoDanado($device, $oldStatus, $device->status));
-        }
+                if ($request->filled('delete_photos')) {
+                    $this->deviceService->deletePhotos($device, $request->delete_photos);
+                }
 
-        if ($request->filled('username') || $request->filled('email')) {
-            $device->credential()->updateOrCreate(
-                ['device_id' => $device->id],
-                [
-                    'username' => $request->username,
-                    'password' => $request->password,
-                    'email' => $request->email,
-                    'email_password' => $request->email_password,
-                ]
-            );
-        } elseif ($device->credential) {
-            $device->credential()->delete();
-        }
+                if ($request->hasFile('photos')) {
+                    $this->deviceService->processPhotosUpload($device, $request->file('photos'));
+                }
+            });
 
-        // Delete selected photos
-        if ($request->filled('delete_photos')) {
-            $photosToDelete = $device->photos()->whereIn('id', $request->delete_photos)->get();
-            foreach ($photosToDelete as $photo) {
-                Storage::disk('private')->delete($photo->file_path);
-                $photo->delete();
+            if ($oldStatus !== $device->status && in_array($device->status, [DeviceStatus::Broken->value, DeviceStatus::Maintenance->value])) {
+                $device->notify(new AlertaEquipoDanado($device, $oldStatus, $device->status));
             }
-        }
 
-        // Upload new photos
-        if ($request->hasFile('photos')) {
-            foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('device-photos/'.$device->id, 'private');
-                $device->photos()->create([
-                    'file_path' => $path,
-                    'uploaded_by' => auth()->id(),
-                ]);
-            }
-        }
+            return redirect()->route('devices.index')->with('success', 'Dispositivo actualizado exitosamente.');
+        } catch (\Exception $e) {
+            report($e);
 
-        return redirect()->route('devices.index')->with('success', 'Dispositivo actualizado exitosamente.');
+            return redirect()->back()->with('error', 'Error al actualizar el dispositivo.')->withInput();
+        }
     }
 
     public function destroy(Device $device)
     {
-        $this->authorize('delete', $device);
-        if ($device->assignments()->whereNull('returned_at')->exists()) {
+        Gate::authorize('delete', $device);
+
+        if (! $this->deviceService->deleteDevice($device)) {
             return redirect()->route('devices.index')
                 ->with('error', 'No se puede eliminar un dispositivo con asignaciones activas. Devuélvelo primero.');
         }
 
-        $device->delete();
+        AuditService::deviceDeleted($device->id, $device->name);
 
         return redirect()->route('devices.index')->with('success', 'Dispositivo eliminado exitosamente.');
     }
 
     public function showPhoto(DevicePhoto $photo)
     {
-        if (! Storage::disk('private')->exists($photo->file_path)) {
+        Gate::authorize('viewPhoto', $photo->device);
+
+        try {
+            if (! Storage::disk('private')->exists($photo->file_path)) {
+                abort(404);
+            }
+
+            return Storage::disk('private')->response($photo->file_path);
+        } catch (\Exception $e) {
+            report($e);
             abort(404);
         }
-
-        return Storage::disk('private')->response($photo->file_path);
     }
 
     public function printQr(Device $device)
@@ -223,18 +152,18 @@ class DeviceController extends Controller
     public function printMultipleQrs(Request $request)
     {
         $ids = $request->input('ids');
+
         if (! $ids) {
             return redirect()->route('devices.index')->with('error', 'No se seleccionaron dispositivos para imprimir.');
         }
 
-        $idArray = array_slice(explode(',', $ids), 0, 50); // Max 50 IDs
-        $devices = Device::whereIn('id', $idArray)->get();
+        $idArray = explode(',', $ids);
+        $devices = $this->deviceService->getDevicesForQrPrint($idArray);
 
         if ($devices->isEmpty()) {
             return redirect()->route('devices.index')->with('error', 'Los dispositivos seleccionados no existen.');
         }
 
-        // Generate QRs for each device
         $devicesWithQr = $devices->map(function ($device) {
             $device->qrCode = QrCode::size(200)->generate(route('devices.show', $device->uuid));
 
@@ -246,42 +175,22 @@ class DeviceController extends Controller
 
     public function exportExcel(Request $request)
     {
-        return Excel::download(
-            new DeviceExport($request->search, $request->type, $request->status, $request->has('include_credentials')),
-            'inventario-activos-'.now()->format('Y-m-d').'.xlsx'
-        );
+        $includeCredentials = $request->has('include_credentials');
+
+        if ($includeCredentials) {
+            Gate::authorize('exportCredentials', Device::class);
+        }
+
+        return $this->exportService->exportExcel($request);
     }
 
     public function exportPdf(Request $request)
     {
-        $query = Device::query();
-
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%")
-                    ->orWhere('serial_number', 'like', "%{$request->search}%")
-                    ->orWhere('brand', 'like', "%{$request->search}%");
-            });
-        }
-
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
         if ($request->has('include_credentials')) {
-            $query->with('credential');
+            Gate::authorize('exportCredentials', Device::class);
+            AuditService::credentialExport(1);
         }
 
-        $devices = $query->take(1000)->get();
-        $includeCredentials = $request->has('include_credentials');
-
-        $pdf = Pdf::loadView('exports.devices-pdf', compact('devices', 'includeCredentials'))
-            ->setPaper('letter', 'landscape');
-
-        return $pdf->download('inventario-activos-'.now()->format('Y-m-d').'.pdf');
+        return $this->exportService->downloadPdf($request);
     }
 }

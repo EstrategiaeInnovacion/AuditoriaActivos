@@ -2,99 +2,118 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
+use App\Models\Assignment;
 use App\Models\Device;
 use App\Models\User;
-use App\Models\Assignment;
+use App\Notifications\DeviceAssigned;
+use App\Services\AuditService;
+use Illuminate\Support\Facades\Cache;
+use Livewire\Component;
 
 class QrScanner extends Component
 {
     public $scannedCode = null;
+
     public $device = null;
+
     public $message = '';
+
     public $isScanning = false;
+
     public $quickMode = false;
 
-    // Variables para el formulario de asignación
     public $showAssignForm = false;
+
     public $users = [];
+
     public $selectedUser = '';
+
     public $assignmentType = 'asignacion_fija';
+
     public $expectedReturnDate = '';
+
     public $deliveryConditions = '';
 
-    public function startScanning()
+    public function mount(): void
     {
+        $this->loadUsers();
+    }
+
+    public function loadUsers(): void
+    {
+        $this->users = Cache::remember('active_users_list', 3600, function () {
+            return User::orderBy('name')->get();
+        });
+    }
+
+    public function startScanning(): void
+    {
+        // $this->authorize('accessQrScanner');
         $this->isScanning = true;
         $this->dispatch('scanner-started');
     }
 
-    public function toggleQuickMode()
+    public function toggleQuickMode(): void
     {
-        $this->quickMode = !$this->quickMode;
+        $this->quickMode = ! $this->quickMode;
     }
 
-    public function processQr($qrCode)
+    public function processQr($qrCode): void
     {
-        $this->isScanning = false; // Stop scanning after successful scan
+        // $this->authorize('accessQrScanner');
+
+        $this->isScanning = false;
         $this->scannedCode = $qrCode;
 
-        // Extraer el UUID de la URL del QR de forma segura
         $parsed = parse_url($qrCode, PHP_URL_PATH);
         $uuid = $parsed ? basename($parsed) : basename($qrCode);
 
         $this->device = Device::with('currentAssignment.user')->where('uuid', $uuid)->first();
 
         if ($this->device) {
-            $this->message = "¡Equipo encontrado!";
-            $this->users = User::orderBy('name')->get();
-        }
-        else {
-            $this->message = "Código QR no reconocido en el sistema.";
+            $this->message = '¡Equipo encontrado!';
+        } else {
+            $this->message = 'Código QR no reconocido en el sistema.';
         }
     }
 
-    // Muestra u oculta el formulario
-    public function toggleAssignForm()
+    public function toggleAssignForm(): void
     {
-        $this->showAssignForm = !$this->showAssignForm;
+        // $this->authorize('accessQrScanner');
+        $this->showAssignForm = ! $this->showAssignForm;
     }
 
-    // Guarda la asignación en la base de datos
-    public function saveAssignment()
+    public function saveAssignment(): void
     {
-        // 1. Validamos que los datos estén correctos
+        // $this->authorize('accessQrScanner');
+
         $this->validate([
             'selectedUser' => 'required|exists:users,id',
             'assignmentType' => 'required|in:asignacion_fija,prestamo_temporal',
-            // La fecha solo es obligatoria si es un préstamo temporal
             'expectedReturnDate' => 'required_if:assignmentType,prestamo_temporal|nullable|date',
         ]);
 
-        // 2. Buscar usuario asignado (una sola vez)
         $assignedUser = User::find($this->selectedUser);
 
-        // 3. Creamos el registro en la tabla assignments
         $assignment = Assignment::create([
             'user_id' => $this->selectedUser,
             'device_id' => $this->device->id,
             'assigned_to' => $assignedUser->name,
             'assigned_at' => now(),
-            'notes' => $this->deliveryConditions . ($this->assignmentType === 'prestamo_temporal' ? " (Devolución esperada: {$this->expectedReturnDate})" : ''),
+            'notes' => $this->deliveryConditions.($this->assignmentType === 'prestamo_temporal' ? " (Devolución esperada: {$this->expectedReturnDate})" : ''),
         ]);
 
-        // 4. Actualizamos el estado del equipo físico
         $this->device->update(['status' => 'assigned']);
 
-        // 5. Notificar al usuario asignado
         if ($assignedUser) {
             $assignment->load('device');
-            $assignedUser->notify(new \App\Notifications\DeviceAssigned($assignment));
+            $assignedUser->notify(new DeviceAssigned($assignment));
         }
 
-        // 4. Reiniciamos la pantalla con mensaje de éxito
+        AuditService::deviceAssigned($this->device->id, $assignedUser->id, $assignedUser->name);
+
         $this->resetScanner();
-        $this->message = "¡Equipo asignado correctamente!";
+        $this->message = '¡Equipo asignado correctamente!';
         $this->scannedCode = 'success_screen';
 
         if ($this->quickMode) {
@@ -102,10 +121,13 @@ class QrScanner extends Component
         }
     }
 
-    public function returnDevice()
+    public function returnDevice(): void
     {
-        if (!$this->device)
+        // $this->authorize('accessQrScanner');
+
+        if (! $this->device) {
             return;
+        }
 
         $currentAssignment = $this->device->currentAssignment;
         if ($currentAssignment) {
@@ -114,8 +136,10 @@ class QrScanner extends Component
 
         $this->device->update(['status' => 'available']);
 
+        AuditService::deviceReturned($this->device->id);
+
         $this->resetScanner();
-        $this->message = "¡Equipo devuelto correctamente!";
+        $this->message = '¡Equipo devuelto correctamente!';
         $this->scannedCode = 'success_screen';
 
         if ($this->quickMode) {
@@ -123,7 +147,7 @@ class QrScanner extends Component
         }
     }
 
-    public function resetScanner()
+    public function resetScanner(): void
     {
         $quickMode = $this->quickMode;
         $this->reset(['scannedCode', 'device', 'message', 'showAssignForm', 'selectedUser', 'assignmentType', 'expectedReturnDate', 'deliveryConditions']);

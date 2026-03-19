@@ -2,24 +2,24 @@
     @auth
         <a
             href="{{ url('/dashboard') }}"
-            class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+            class="rounded-md px-3 py-2 text-slate-300 ring-1 ring-transparent transition hover:text-white hover:ring-indigo-500/50 focus:outline-none focus-visible:ring-indigo-500 dark:text-white dark:hover:text-white"
         >
             Dashboard
         </a>
     @else
         <a
             href="{{ route('login') }}"
-            class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+            class="rounded-md px-3 py-2 text-slate-300 ring-1 ring-transparent transition hover:text-white hover:ring-indigo-500/50 focus:outline-none focus-visible:ring-indigo-500 dark:text-white dark:hover:text-white"
         >
-            Log in
+            Iniciar Sesión
         </a>
 
         @if (Route::has('register'))
             <a
                 href="{{ route('register') }}"
-                class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                class="rounded-md px-3 py-2 text-slate-300 ring-1 ring-transparent transition hover:text-white hover:ring-indigo-500/50 focus:outline-none focus-visible:ring-indigo-500 dark:text-white dark:hover:text-white"
             >
-                Register
+                Registrarse
             </a>
         @endif
     @endauth

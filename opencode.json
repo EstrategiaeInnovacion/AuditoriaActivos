@@ -20,6 +20,17 @@
             "environment": {
                 "STITCH_API_KEY": "AQ.Ab8RN6LGVAz88VYa_1xluNcVwfaa36sbM3JvgFIgvdw_T05YEA"
             }
+        },
+        "nano-banana": {
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "nano-banana-mcp"
+            ],
+            "environment": {
+                "GEMINI_API_KEY": "AIzaSyDTItM1KVGTss0dAXBDXDFYgzElpSuipSU"
+            }
         }
     }
 }

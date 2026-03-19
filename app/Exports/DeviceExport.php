@@ -3,18 +3,22 @@
 namespace App\Exports;
 
 use App\Models\Device;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class DeviceExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class DeviceExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     protected $search;
+
     protected $type;
+
     protected $status;
+
     protected $includeCredentials;
 
     public function __construct(?string $search = null, ?string $type = null, ?string $status = null, bool $includeCredentials = false)
@@ -25,31 +29,37 @@ class DeviceExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSi
         $this->includeCredentials = $includeCredentials;
     }
 
-    public function query()
+    public static function queryForExport(?string $search = null, ?string $type = null, ?string $status = null, bool $includeCredentials = false)
     {
         $query = Device::query();
 
-        if ($this->includeCredentials) {
+        if ($includeCredentials) {
+            Gate::authorize('exportCredentials', Device::class);
             $query->with('credential');
         }
 
-        if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', "%{$this->search}%")
-                    ->orWhere('serial_number', 'like', "%{$this->search}%")
-                    ->orWhere('brand', 'like', "%{$this->search}%");
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('serial_number', 'like', "%{$search}%")
+                    ->orWhere('brand', 'like', "%{$search}%");
             });
         }
 
-        if ($this->type) {
-            $query->where('type', $this->type);
+        if ($type) {
+            $query->where('type', $type);
         }
 
-        if ($this->status) {
-            $query->where('status', $this->status);
+        if ($status) {
+            $query->where('status', $status);
         }
 
         return $query;
+    }
+
+    public function query()
+    {
+        return self::queryForExport($this->search, $this->type, $this->status, $this->includeCredentials);
     }
 
     public function headings(): array
@@ -67,6 +77,7 @@ class DeviceExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSi
         ];
 
         if ($this->includeCredentials) {
+            Gate::authorize('exportCredentials', Device::class);
             $headings[] = 'Usuario Equipo';
             $headings[] = 'Contraseña Equipo';
             $headings[] = 'Correo';

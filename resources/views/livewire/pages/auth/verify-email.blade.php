@@ -8,9 +8,6 @@ use Livewire\Volt\Component;
 
 new #[Layout('layouts.guest')] class extends Component
 {
-    /**
-     * Send an email verification notification to the user.
-     */
     public function sendVerification(): void
     {
         if (Auth::user()->hasVerifiedEmail()) {
@@ -24,9 +21,6 @@ new #[Layout('layouts.guest')] class extends Component
         Session::flash('status', 'verification-link-sent');
     }
 
-    /**
-     * Log the current user out of the application.
-     */
     public function logout(Logout $logout): void
     {
         $logout();
@@ -35,24 +29,24 @@ new #[Layout('layouts.guest')] class extends Component
     }
 }; ?>
 
-<div>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
+<div class="space-y-4">
+    <div class="mb-4 text-sm text-slate-400">
+        {{ __('¡Gracias por registrarte! Antes de comenzar, ¿podrías verificar tu dirección de correo electrónico haciendo clic en el enlace que te enviamos? Si no recibiste el correo, con gusto te enviaremos otro.') }}
     </div>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+        <div class="mb-4 font-medium text-sm text-emerald-400 bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20">
+            {{ __('Se ha enviado un nuevo enlace de verificación a la dirección de correo electrónico que proporcionaste durante el registro.') }}
         </div>
     @endif
 
     <div class="mt-4 flex items-center justify-between">
         <x-primary-button wire:click="sendVerification">
-            {{ __('Resend Verification Email') }}
+            {{ __('Reenviar Correo de Verificación') }}
         </x-primary-button>
 
-        <button wire:click="logout" type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            {{ __('Log Out') }}
+        <button wire:click="logout" type="submit" class="underline text-sm text-slate-400 hover:text-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition">
+            {{ __('Cerrar Sesión') }}
         </button>
     </div>
 </div>

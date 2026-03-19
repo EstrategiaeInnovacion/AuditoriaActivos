@@ -1,9 +1,9 @@
-<div class="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden">
-    <div class="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-cyan-50/50 flex items-center gap-3">
-        <div class="p-2 bg-gradient-to-br from-cyan-100 to-cyan-200 rounded-xl">
-            <svg class="w-5 h-5 text-cyan-600" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+<div class="glass-light rounded-2xl overflow-hidden card-hover">
+    <div class="px-6 py-4 border-b border-slate-700/50 flex items-center gap-3">
+        <div class="p-2 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20">
+            <svg class="w-5 h-5 text-indigo-400" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
         </div>
-        <h3 class="text-lg font-bold text-slate-800">Estado de Activos</h3>
+        <h3 class="text-lg font-bold text-white">Estado de Activos</h3>
     </div>
     <div class="p-6">
         <div class="relative h-64 w-full">
@@ -34,13 +34,19 @@
                     datasets: [{
                         data: [data.available, data.assigned, data.maintenance, data.broken],
                         backgroundColor: [
-                            '#22c55e',
-                            '#3b82f6',
-                            '#eab308',
-                            '#ef4444'
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(234, 179, 8, 0.8)',
+                            'rgba(239, 68, 68, 0.8)'
                         ],
-                        borderWidth: 0,
-                        hoverOffset: 6,
+                        borderColor: [
+                            'rgba(34, 197, 94, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(234, 179, 8, 1)',
+                            'rgba(239, 68, 68, 1)'
+                        ],
+                        borderWidth: 2,
+                        hoverOffset: 8,
                         hoverBorderWidth: 3,
                         hoverBorderColor: '#fff'
                     }]
@@ -60,11 +66,11 @@
                                     size: 12,
                                     weight: '500'
                                 },
-                                color: '#475569'
+                                color: '#94a3b8'
                             }
                         },
                         tooltip: {
-                            backgroundColor: '#1e293b',
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
                             titleFont: {
                                 family: 'Inter, sans-serif',
                                 size: 14,
@@ -77,13 +83,17 @@
                             padding: 12,
                             cornerRadius: 8,
                             displayColors: true,
-                            boxPadding: 4
+                            boxPadding: 4,
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1
                         }
                     },
                     cutout: '65%',
                     animation: {
                         animateScale: true,
-                        animateRotate: true
+                        animateRotate: true,
+                        duration: 1000,
+                        easing: 'easeOutQuart'
                     }
                 }
             });
