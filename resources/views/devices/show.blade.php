@@ -1,4 +1,12 @@
-<x-app-layout title="Detalles del Activo">
+<x-app-layout title="Detalles del Activo" x-data="{
+    lightbox: false,
+    currentImage: '',
+    openLightbox(index) {
+        const photos = @json($device->photos->map(fn($p) => route('device.photos.show', $p))->values());
+        this.currentImage = photos[index] || '';
+        this.lightbox = true;
+    }
+}">
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 class="font-bold text-xl text-white leading-tight">
@@ -17,15 +25,7 @@
         </div>
     </x-slot>
 
-    <div class="py-12" x-data="{
-        lightbox: false,
-        currentImage: '',
-        openLightbox(index) {
-            const photos = @json($device->photos->map(fn($p) => route('device.photos.show', $p))->values());
-            this.currentImage = photos[index] || '';
-            this.lightbox = true;
-        }
-    }">
+    <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
