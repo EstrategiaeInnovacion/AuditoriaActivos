@@ -1,12 +1,16 @@
-<x-app-layout title="Detalles del Activo" x-data="{
-    lightbox: false,
-    currentImage: '',
-    openLightbox(index) {
-        const photos = @json($device->photos->map(fn($p) => route('device.photos.show', $p))->values());
-        this.currentImage = photos[index] || '';
-        this.lightbox = true;
-    }
-}">
+<x-app-layout title="Detalles del Activo">
+    <script>
+        window.deviceLightboxData = {
+            lightbox: false,
+            currentImage: '',
+            photos: @json($device->photos->map(fn($p) => route('device.photos.show', $p))->values()),
+            openLightbox(index) {
+                this.currentImage = this.photos[index] || '';
+                this.lightbox = true;
+            }
+        };
+    </script>
+    <div x-data="window.deviceLightboxData">
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 class="font-bold text-xl text-white leading-tight">

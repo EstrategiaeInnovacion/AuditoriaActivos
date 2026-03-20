@@ -74,6 +74,7 @@
                 color: #818cf8;
                 border: 1px solid rgba(99, 102, 241, 0.2);
             }
+            [x-cloak] { display: none !important; }
             .noise {
                 position: fixed;
                 top: 0;
@@ -83,7 +84,7 @@
                 pointer-events: none;
                 opacity: 0.02;
                 z-index: 1000;
-                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
             }
         </style>
     </head>
