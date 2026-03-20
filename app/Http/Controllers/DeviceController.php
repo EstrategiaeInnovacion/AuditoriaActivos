@@ -14,6 +14,7 @@ use App\Services\ExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -43,21 +44,37 @@ class DeviceController extends Controller
     {
         Gate::authorize('create', Device::class);
 
+        Log::info('DeviceController@store - Intentando crear dispositivo', [
+            'data' => $request->except(['password', 'email_password']),
+        ]);
+
         $validated = $request->validated();
 
         try {
-            $device = DB::transaction(function () use ($validated): Device {
+            $hasPhotos = $request->hasFile('photos');
+            $photos = $hasPhotos ? $request->file('photos') : [];
+
+            $device = DB::transaction(function () use ($validated, $hasPhotos, $photos): Device {
                 $device = $this->deviceService->createDevice($validated);
 
-                if ($request->hasFile('photos')) {
-                    $this->deviceService->processPhotosUpload($device, $request->file('photos'));
+                if ($hasPhotos && ! empty($photos)) {
+                    $this->deviceService->processPhotosUpload($device, $photos);
                 }
 
                 return $device;
             });
 
+            Log::info('DeviceController@store - Dispositivo creado exitosamente', [
+                'device_id' => $device->id,
+                'uuid' => $device->uuid,
+            ]);
+
             return redirect()->route('devices.index')->with('success', 'Dispositivo creado exitosamente.');
         } catch (\Exception $e) {
+            Log::error('DeviceController@store - Error al crear dispositivo', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             report($e);
 
             return redirect()->back()->with('error', 'Error al crear el dispositivo.')->withInput();

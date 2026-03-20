@@ -179,89 +179,103 @@
     @endif
 
 
-
+    @push('scripts')
     <script>
-        if (typeof window.qrScanner === 'undefined') {
-            window.qrScanner = {
-                scanner: null,
+        window.QrScannerInit = window.QrScannerInit || {
+            initialized: false,
+            scanner: null,
 
-                startScanner() {
-                    const readerEl = document.getElementById('reader');
-                    if (!readerEl) {
-                        return false;
-                    }
-                    
-                    if (typeof Html5QrcodeScanner === 'undefined') {
-                        setTimeout(() => this.startScanner(), 100);
-                        return false;
-                    }
-                    
-                    if (this.scanner) return true;
-
-                    try {
-                        this.scanner = new Html5QrcodeScanner(
-                            "reader", 
-                            { fps: 10, qrbox: {width: 250, height: 250} },
-                            false
-                        );
-                        
-                        this.scanner.render(this.onScanSuccess.bind(this), this.onScanFailure.bind(this));
-                        return true;
-                    } catch (e) {
-                        console.error("Error al iniciar el scanner:", e);
-                        return false;
-                    }
-                },
-
-                stopScanner() {
-                    if (this.scanner) {
-                        this.scanner.clear().then(() => {
-                            this.scanner = null;
-                        }).catch(() => {
-                            this.scanner = null;
-                        });
-                    }
-                },
-
-                onScanSuccess(decodedText) {
-                    if (typeof Livewire !== 'undefined') {
-                        Livewire.first().processQr(decodedText);
-                    }
-                    this.stopScanner();
-                },
-
-                onScanFailure(error) {
-                    // Ignore
-                },
-
-                tryStart() {
-                    const started = this.startScanner();
-                    if (!started) {
-                        setTimeout(() => this.tryStart(), 100);
-                    }
+            startScanner() {
+                const readerEl = document.getElementById('reader');
+                if (!readerEl) {
+                    return false;
                 }
-            };
+                
+                if (typeof Html5QrcodeScanner === 'undefined') {
+                    setTimeout(() => this.startScanner(), 100);
+                    return false;
+                }
+                
+                if (this.scanner) return true;
 
-            document.addEventListener('DOMContentLoaded', () => {
-                window.qrScanner.tryStart();
+                try {
+                    this.scanner = new Html5QrcodeScanner(
+                        "reader", 
+                        { fps: 10, qrbox: {width: 250, height: 250} },
+                        false
+                    );
+                    
+                    this.scanner.render(this.onScanSuccess.bind(this), this.onScanFailure.bind(this));
+                    return true;
+                } catch (e) {
+                    console.error("Error al iniciar el scanner:", e);
+                    return false;
+                }
+            },
+
+            stopScanner() {
+                if (this.scanner) {
+                    this.scanner.clear().then(() => {
+                        this.scanner = null;
+                    }).catch(() => {
+                        this.scanner = null;
+                    });
+                }
+            },
+
+            onScanSuccess(decodedText) {
+                const component = Livewire.first();
+                if (component && typeof component.processQr === 'function') {
+                    component.processQr(decodedText);
+                }
+                this.stopScanner();
+            },
+
+            onScanFailure(error) {},
+
+            tryStart() {
+                if (this.initialized) return;
+                const started = this.startScanner();
+                if (!started && typeof Html5QrcodeScanner !== 'undefined') {
+                    setTimeout(() => this.tryStart(), 100);
+                }
+                this.initialized = true;
+            },
+
+            reset() {
+                this.stopScanner();
+                this.initialized = false;
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.QrScannerInit.tryStart();
+        });
+
+        if (typeof Livewire !== 'undefined') {
+            Livewire.hook('morph', ({ el }) => {
+                if (el.querySelector && el.querySelector('#reader')) {
+                    setTimeout(() => window.QrScannerInit.tryStart(), 200);
+                }
             });
 
-            if (typeof Livewire !== 'undefined') {
-                Livewire.hook('morph', ({ el }) => {
-                    setTimeout(() => window.qrScanner.tryStart(), 200);
-                });
+            Livewire.on('scanner-started', () => {
+                window.QrScannerInit.reset();
+                setTimeout(() => window.QrScannerInit.tryStart(), 200);
+            });
 
-                Livewire.on('scanner-started', () => {
-                    setTimeout(() => window.qrScanner.tryStart(), 200);
-                });
-
-                Livewire.on('auto-scan-next', () => {
-                    setTimeout(() => {
-                        Livewire.first().resetScanner();
-                        Livewire.first().startScanning();
-                    }, 1500);
-                });
-            }
+            Livewire.on('auto-scan-next', () => {
+                setTimeout(() => {
+                    const component = Livewire.first();
+                    if (component && typeof component.resetScanner === 'function') {
+                        component.resetScanner();
+                    }
+                    if (component && typeof component.startScanning === 'function') {
+                        component.startScanning();
+                    }
+                }, 1500);
+            });
         }
     </script>
+    @endpush
 </div>
