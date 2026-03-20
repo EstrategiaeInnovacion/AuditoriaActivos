@@ -17,29 +17,7 @@
         </div>
     </x-slot>
 
-    <div class="py-12" x-data="{
-        lightbox: false,
-        currentImg: '',
-        currentIndex: 0,
-        photos: {{ Js::from($device->photos->values()) }},
-        scale: 1,
-        loading: false,
-        openLightbox(index, img) {
-            this.currentIndex = index;
-            this.currentImg = img;
-            this.lightbox = true;
-            this.scale = 1;
-        },
-        navigatePhoto(dir) {
-            if (this.photos.length <= 1) return;
-            this.currentIndex = (this.currentIndex + dir + this.photos.length) % this.photos.length;
-            this.currentImg = '/photos/' + this.photos[this.currentIndex].id;
-            this.scale = 1;
-        },
-        zoomIn() { this.scale = Math.min(this.scale + 0.25, 4); },
-        zoomOut() { this.scale = Math.max(this.scale - 0.25, 0.5); },
-        resetZoom() { this.scale = 1; }
-    }" @keydown.escape.window="lightbox = false" @keydown.arrow-left.window="navigatePhoto(-1)" @keydown.arrow-right.window="navigatePhoto(1)">
+    <div class="py-12" x-data="lightboxApp()">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -161,14 +139,11 @@
                             @if($device->photos->count())
                                 <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
                                     @foreach($device->photos as $index => $photo)
-                                        <div class="relative group cursor-pointer" @click="openLightbox({{ $index }}, '{{ route('device.photos.show', $photo) }}')">
-                                            <img src="{{ route('device.photos.show', $photo) }}" alt="{{ $photo->caption ?? 'Foto del equipo' }}" class="w-full h-24 object-cover rounded-lg border border-slate-700/50 group-hover:border-indigo-500/50 transition">
+                                        <div class="relative group cursor-pointer" @click="openLightbox({{ $index }})">
+                                            <img src="{{ route('device.photos.show', $photo) }}" alt="Foto del equipo" class="w-full h-24 object-cover rounded-lg border border-slate-700/50 group-hover:border-indigo-500/50 transition">
                                             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-lg transition flex items-center justify-center">
                                                 <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
                                             </div>
-                                            @if($device->photos->count() > 1)
-                                                <span class="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">{{ $index + 1 }}/{{ $device->photos->count() }}</span>
-                                            @endif
                                         </div>
                                     @endforeach
                                 </div>
@@ -287,7 +262,7 @@
                                                     @if($isCurrent)
                                                         <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">
                                                             <svg class="w-3 h-3" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10"/></svg>
-                                                            Asignado actualmente · {{ $assignment->assigned_at->diffForHumans() }}
+                                                            Asignado actualmente
                                                         </span>
                                                     @else
                                                         <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
@@ -319,32 +294,25 @@
 
     <div x-show="lightbox" x-cloak class="fixed inset-0 z-[9999] bg-slate-950/95 backdrop-blur-sm flex items-center justify-center" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
         <div class="absolute inset-0" @click="lightbox = false"></div>
-        <div class="absolute top-4 right-4 flex items-center gap-2 z-10">
-            <button @click.stop="zoomIn()" class="p-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-white transition" title="Acercar">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path></svg>
-            </button>
-            <span class="text-white text-sm font-mono bg-slate-800/80 px-2 py-1 rounded" x-text="Math.round(scale * 100) + '%'"></span>
-            <button @click.stop="zoomOut()" class="p-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-white transition" title="Alejar">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg>
-            </button>
-            <button @click.stop="resetZoom()" class="p-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-white transition" title="Restablecer">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-            </button>
-            <button @click="lightbox = false" class="p-2 bg-slate-800/80 hover:bg-red-600 rounded-lg text-white transition ml-2">
-                <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-        @if($device->photos->count() > 1)
-            <button @click.stop="navigatePhoto(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-slate-800/80 hover:bg-slate-700 rounded-full text-white transition z-10">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-            </button>
-            <button @click.stop="navigatePhoto(1)" class="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-slate-800/80 hover:bg-slate-700 rounded-full text-white transition z-10">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            </button>
-            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-800/80 px-3 py-1 rounded-full text-white text-sm z-10" x-text="(currentIndex + 1) + ' / {{ $device->photos->count() }}'"></div>
-        @endif
+        <button @click="lightbox = false" class="absolute top-4 right-4 p-2 bg-slate-800/80 hover:bg-red-600 rounded-lg text-white transition z-10">
+            <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
         <div class="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center" @click.stop>
-            <img :src="currentImg" alt="Foto ampliada" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border border-slate-700/50 transition-transform duration-200" :style="'transform: scale(' + scale + ')'" @load="loading = false" @error="loading = false">
+            <img :src="currentImage" alt="Foto ampliada" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border border-slate-700/50">
         </div>
     </div>
+
+    <script>
+        function lightboxApp() {
+            return {
+                lightbox: false,
+                currentImage: '',
+                openLightbox(index) {
+                    const photos = @json($device->photos->map(fn($p) => route('device.photos.show', $p))->values());
+                    this.currentImage = photos[index] || '';
+                    this.lightbox = true;
+                }
+            }
+        }
+    </script>
 </x-app-layout>
