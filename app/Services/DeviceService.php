@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Enums\DeviceStatus;
 use App\Events\DeviceCreated;
 use App\Events\DeviceStatusChanged;
-use App\Jobs\ProcessDevicePhoto;
 use App\Models\Credential;
 use App\Models\Device;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -114,7 +113,12 @@ class DeviceService
     public function processPhotosUpload(Device $device, array $files): void
     {
         foreach ($files as $photo) {
-            ProcessDevicePhoto::dispatch($device, $photo, auth()->id());
+            $path = $photo->store('device-photos/'.$device->id, 'private');
+
+            $device->photos()->create([
+                'file_path' => $path,
+                'uploaded_by' => auth()->id(),
+            ]);
         }
     }
 

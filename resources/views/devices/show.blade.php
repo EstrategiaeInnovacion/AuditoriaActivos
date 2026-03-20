@@ -17,7 +17,29 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12" x-data="{
+        lightbox: false,
+        currentImg: '',
+        currentIndex: 0,
+        photos: {{ Js::from($device->photos->values()) }},
+        scale: 1,
+        loading: false,
+        openLightbox(index, img) {
+            this.currentIndex = index;
+            this.currentImg = img;
+            this.lightbox = true;
+            this.scale = 1;
+        },
+        navigatePhoto(dir) {
+            if (this.photos.length <= 1) return;
+            this.currentIndex = (this.currentIndex + dir + this.photos.length) % this.photos.length;
+            this.currentImg = '/photos/' + this.photos[this.currentIndex].id;
+            this.scale = 1;
+        },
+        zoomIn() { this.scale = Math.min(this.scale + 0.25, 4); },
+        zoomOut() { this.scale = Math.max(this.scale - 0.25, 0.5); },
+        resetZoom() { this.scale = 1; }
+    }" @keydown.escape.window="lightbox = false" @keydown.arrow-left.window="navigatePhoto(-1)" @keydown.arrow-right.window="navigatePhoto(1)">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -128,34 +150,31 @@
                     </div>
                     @endif
 
-                    <div class="glass rounded-2xl overflow-hidden" x-data="{ lightbox: false, currentImg: '' }">
+                    <div class="glass rounded-2xl overflow-hidden">
                         <div class="px-6 py-4 border-b border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
                             <h3 class="text-lg font-bold text-slate-200 tracking-tight flex items-center gap-2">
                             <svg class="w-5 h-5 text-cyan-400" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            Fotos del Equipo
+                            Fotos del Equipo ({{ $device->photos->count() }})
                         </h3>
                         </div>
                         <div class="p-6">
                             @if($device->photos->count())
                                 <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                                    @foreach($device->photos as $photo)
-                                        <div class="relative group cursor-pointer" @click="lightbox = true; currentImg = '{{ route('device.photos.show', $photo) }}'">
+                                    @foreach($device->photos as $index => $photo)
+                                        <div class="relative group cursor-pointer" @click="openLightbox({{ $index }}, '{{ route('device.photos.show', $photo) }}')">
                                             <img src="{{ route('device.photos.show', $photo) }}" alt="{{ $photo->caption ?? 'Foto del equipo' }}" class="w-full h-24 object-cover rounded-lg border border-slate-700/50 group-hover:border-indigo-500/50 transition">
                                             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-lg transition flex items-center justify-center">
                                                 <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
                                             </div>
+                                            @if($device->photos->count() > 1)
+                                                <span class="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">{{ $index + 1 }}/{{ $device->photos->count() }}</span>
+                                            @endif
                                         </div>
                                     @endforeach
                                 </div>
                             @else
                                 <p class="text-sm text-slate-500 text-center py-4">Sin fotos. Agrega fotos al editar el dispositivo.</p>
                             @endif
-                        </div>
-                        <div x-show="lightbox" x-cloak @click="lightbox = false" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-                            <img :src="currentImg" alt="Foto ampliada" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl border border-slate-700/50">
-                            <button @click="lightbox = false" class="absolute top-4 right-4 text-slate-400 hover:text-white transition">
-                                <svg class="w-8 h-8" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -295,6 +314,37 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <div x-show="lightbox" x-cloak class="fixed inset-0 z-[9999] bg-slate-950/95 backdrop-blur-sm flex items-center justify-center" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="absolute inset-0" @click="lightbox = false"></div>
+        <div class="absolute top-4 right-4 flex items-center gap-2 z-10">
+            <button @click.stop="zoomIn()" class="p-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-white transition" title="Acercar">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path></svg>
+            </button>
+            <span class="text-white text-sm font-mono bg-slate-800/80 px-2 py-1 rounded" x-text="Math.round(scale * 100) + '%'"></span>
+            <button @click.stop="zoomOut()" class="p-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-white transition" title="Alejar">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg>
+            </button>
+            <button @click.stop="resetZoom()" class="p-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-white transition" title="Restablecer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+            </button>
+            <button @click="lightbox = false" class="p-2 bg-slate-800/80 hover:bg-red-600 rounded-lg text-white transition ml-2">
+                <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        @if($device->photos->count() > 1)
+            <button @click.stop="navigatePhoto(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-slate-800/80 hover:bg-slate-700 rounded-full text-white transition z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button @click.stop="navigatePhoto(1)" class="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-slate-800/80 hover:bg-slate-700 rounded-full text-white transition z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-800/80 px-3 py-1 rounded-full text-white text-sm z-10" x-text="(currentIndex + 1) + ' / {{ $device->photos->count() }}'"></div>
+        @endif
+        <div class="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center" @click.stop>
+            <img :src="currentImg" alt="Foto ampliada" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border border-slate-700/50 transition-transform duration-200" :style="'transform: scale(' + scale + ')'" @load="loading = false" @error="loading = false">
         </div>
     </div>
 </x-app-layout>
