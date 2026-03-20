@@ -17,7 +17,15 @@
         </div>
     </x-slot>
 
-    <div class="py-12" x-data="lightboxApp()">
+    <div class="py-12" x-data="{
+        lightbox: false,
+        currentImage: '',
+        openLightbox(index) {
+            const photos = @json($device->photos->map(fn($p) => route('device.photos.show', $p))->values());
+            this.currentImage = photos[index] || '';
+            this.lightbox = true;
+        }
+    }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -301,18 +309,4 @@
             <img :src="currentImage" alt="Foto ampliada" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border border-slate-700/50">
         </div>
     </div>
-
-    <script>
-        function lightboxApp() {
-            return {
-                lightbox: false,
-                currentImage: '',
-                openLightbox(index) {
-                    const photos = @json($device->photos->map(fn($p) => route('device.photos.show', $p))->values());
-                    this.currentImage = photos[index] || '';
-                    this.lightbox = true;
-                }
-            }
-        }
-    </script>
 </x-app-layout>
