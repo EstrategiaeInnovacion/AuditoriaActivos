@@ -49,20 +49,28 @@ class QrScanner extends Component
                 'X-API-Key' => $apiKey,
             ])->get($erpUrl);
             
-            if ($response->successful() && isset($response->json('data'))) {
-                $this->employees = collect($response->json('data'))->map(function ($emp) {
-                    return (object) [
-                        'id' => $emp['id'],
-                        'name' => $emp['name'],
-                        'employee_id' => $emp['employee_id'] ?? null,
-                        'department' => $emp['department'] ?? null,
-                        'position' => $emp['position'] ?? null,
-                    ];
-                })->toArray();
+            $data = $response->json();
+            if ($response->successful() && $data !== null && isset($data['data'])) {
+                // Sincronizar empleados con la base de datos local
+                foreach ($data['data'] as $emp) {
+                    Employee::updateOrCreate(
+                        ['employee_id' => $emp['employee_id'] ?? $emp['id']],
+                        [
+                            'name' => $emp['name'],
+                            'department' => $emp['department'] ?? null,
+                            'position' => $emp['position'] ?? null,
+                            'phone' => $emp['phone'] ?? null,
+                            'is_active' => true,
+                        ]
+                    );
+                }
             }
         } catch (\Exception $e) {
-            $this->employees = [];
+            // Si falla la conexión, usar empleados locales
         }
+
+        // Cargar empleados desde la base de datos local
+        $this->employees = Employee::where('is_active', true)->orderBy('name')->get()->toArray();
     }
 
     public function startScanning(): void
