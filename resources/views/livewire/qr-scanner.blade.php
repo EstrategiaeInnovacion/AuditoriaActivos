@@ -224,9 +224,13 @@
             },
 
             onScanSuccess(decodedText) {
+                console.log('QR Code scanned:', decodedText);
                 const component = Livewire.findByName('qr-scanner');
+                console.log('Component found:', component);
                 if (component && typeof component.processQr === 'function') {
                     component.processQr(decodedText);
+                } else {
+                    console.error('processQr method not found on component');
                 }
                 this.stopScanner();
             },
