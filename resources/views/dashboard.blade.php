@@ -199,7 +199,8 @@
 
             {{-- ===================== QR SCANNER MODAL ===================== --}}
             <div x-show="showQrScanner" 
-                 x-init="$el.focus(); setTimeout(() => { if (window.QrScannerInit) { window.QrScannerInit.initialized = false; window.QrScannerInit.tryStart(); } }, 500)"
+                 x-init="$el.focus()"
+                 @showQrScanner.window="setTimeout(() => { window.QrScannerInit && (window.QrScannerInit.initialized = false, window.QrScannerInit.tryStart()); }, 300)"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0"
                  x-transition:enter-end="opacity-100"

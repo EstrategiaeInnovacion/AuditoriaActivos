@@ -295,7 +295,7 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, waiting for scanner-started event');
+            console.log('DOM loaded, waiting for user to open scanner');
         });
 
         if (typeof Livewire !== 'undefined') {
