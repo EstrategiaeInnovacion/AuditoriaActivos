@@ -187,18 +187,25 @@
 
             startScanner() {
                 const readerEl = document.getElementById('reader');
+                console.log('startScanner called, readerEl:', readerEl);
                 if (!readerEl) {
+                    console.log('Reader element not found');
                     return false;
                 }
                 
                 if (typeof Html5QrcodeScanner === 'undefined') {
+                    console.log('Html5QrcodeScanner not loaded yet');
                     setTimeout(() => this.startScanner(), 100);
                     return false;
                 }
                 
-                if (this.scanner) return true;
+                if (this.scanner) {
+                    console.log('Scanner already initialized');
+                    return true;
+                }
 
                 try {
+                    console.log('Initializing Html5QrcodeScanner');
                     this.scanner = new Html5QrcodeScanner(
                         "reader", 
                         { fps: 10, qrbox: {width: 250, height: 250} },
@@ -206,6 +213,7 @@
                     );
                     
                     this.scanner.render(this.onScanSuccess.bind(this), this.onScanFailure.bind(this));
+                    console.log('Scanner rendered successfully');
                     return true;
                 } catch (e) {
                     console.error("Error al iniciar el scanner:", e);
@@ -238,9 +246,14 @@
             onScanFailure(error) {},
 
             tryStart() {
+                console.log('tryStart called, initialized:', this.initialized);
                 if (this.initialized) return;
+                
                 const started = this.startScanner();
+                console.log('startScanner result:', started);
+                
                 if (!started && typeof Html5QrcodeScanner !== 'undefined') {
+                    console.log('Retrying startScanner...');
                     setTimeout(() => this.tryStart(), 100);
                 }
                 this.initialized = true;
@@ -253,19 +266,21 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            window.QrScannerInit.tryStart();
+            console.log('DOM loaded, waiting for scanner-started event');
         });
 
         if (typeof Livewire !== 'undefined') {
             Livewire.hook('morph', ({ el }) => {
                 if (el.querySelector && el.querySelector('#reader')) {
-                    setTimeout(() => window.QrScannerInit.tryStart(), 200);
+                    console.log('Reader element found, starting scanner');
+                    setTimeout(() => window.QrScannerInit.tryStart(), 300);
                 }
             });
 
             Livewire.on('scanner-started', () => {
+                console.log('Scanner started event received');
                 window.QrScannerInit.reset();
-                setTimeout(() => window.QrScannerInit.tryStart(), 200);
+                setTimeout(() => window.QrScannerInit.tryStart(), 300);
             });
 
             Livewire.on('auto-scan-next', () => {
