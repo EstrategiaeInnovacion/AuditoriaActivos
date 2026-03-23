@@ -224,7 +224,7 @@
             },
 
             onScanSuccess(decodedText) {
-                const component = Livewire.first();
+                const component = Livewire.findByName('qr-scanner');
                 if (component && typeof component.processQr === 'function') {
                     component.processQr(decodedText);
                 }
@@ -266,7 +266,7 @@
 
             Livewire.on('auto-scan-next', () => {
                 setTimeout(() => {
-                    const component = Livewire.first();
+                    const component = Livewire.findByName('qr-scanner');
                     if (component && typeof component.resetScanner === 'function') {
                         component.resetScanner();
                     }
