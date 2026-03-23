@@ -5,8 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('api.key')->prefix('v1')->group(function () {
     Route::get('/users', function () {
-        $erpUrl = 'https://erp.estrategiaeinnovacion.com.mx/api/v1/users';
-        $erpApiKey = 'xpOaPnlnQirvPWiR2MDaBtNsur6j7m3Z4dnl0iK/lVc=';
+        $erpUrl = config('app.erp_api_url') . '/api/v1/users';
+        $erpApiKey = config('app.erp_api_key');
 
         try {
             $response = Http::withHeaders([

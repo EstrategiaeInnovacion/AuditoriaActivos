@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | ERP Integration Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for connecting to external ERP system
+    |
+    */
+
+    'erp_api_url' => env('ERP_API_URL', 'https://erp.estrategiaeinnovacion.com.mx'),
+    'erp_api_key' => env('ERP_API_KEY', 'xpOaPnlnQirvPWiR2MDaBtNsur6j7m3Z4dnl0iK/lVc='),
+
 ];

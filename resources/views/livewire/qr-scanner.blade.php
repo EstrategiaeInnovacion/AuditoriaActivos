@@ -72,14 +72,14 @@
                         </h4>
                         
                         <div class="mb-3">
-                            <label for="qr-selected-user" class="block text-sm font-medium text-slate-400">Empleado Responsable</label>
-                            <select wire:model="selectedUser" id="qr-selected-user" class="mt-1 block w-full bg-slate-800/50 border-slate-600/50 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 backdrop-blur-sm">
+                            <label for="qr-selected-employee" class="block text-sm font-medium text-slate-400">Empleado Responsable</label>
+                            <select wire:model="selectedEmployeeId" id="qr-selected-employee" class="mt-1 block w-full bg-slate-800/50 border-slate-600/50 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 backdrop-blur-sm">
                                 <option value="">Selecciona un empleado...</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @foreach($employees as $employee)
+                                    <option value="{{ $employee['id'] }}">{{ $employee['name'] }} ({{ $employee['employee_id'] ?? 'Sin ID' }}) - {{ $employee['department'] ?? '' }}</option>
                                 @endforeach
                             </select>
-                            @error('selectedUser') <span class="text-red-400 text-xs">{{ $message }}</span> @enderror
+                            @error('selectedEmployeeId') <span class="text-red-400 text-xs">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="mb-3">
@@ -123,14 +123,14 @@
                                         Asignación Rápida
                                     </h4>
                                     <div class="mb-3">
-                                        <label for="qr-quick-user" class="sr-only">Empleado Responsable</label>
-                                        <select wire:model="selectedUser" id="qr-quick-user" class="block w-full bg-slate-800/50 border-slate-600/50 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 backdrop-blur-sm">
+                                        <label for="qr-quick-employee" class="sr-only">Empleado Responsable</label>
+                                        <select wire:model="selectedEmployeeId" id="qr-quick-employee" class="block w-full bg-slate-800/50 border-slate-600/50 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 backdrop-blur-sm">
                                             <option value="">Selecciona un empleado...</option>
-                                            @foreach($users as $user)
-                                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                            @foreach($employees as $employee)
+                                                <option value="{{ $employee['id'] }}">{{ $employee['name'] }}</option>
                                             @endforeach
                                         </select>
-                                        @error('selectedUser') <span class="text-red-400 text-xs">{{ $message }}</span> @enderror
+                                        @error('selectedEmployeeId') <span class="text-red-400 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <button wire:click="saveAssignment" class="w-full bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-500/30 hover:from-indigo-400 hover:to-cyan-400 transition-all flex items-center justify-center gap-2">
                                         <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>

@@ -4,10 +4,10 @@ namespace App\Livewire;
 
 use App\Models\Assignment;
 use App\Models\Device;
-use App\Models\User;
+use App\Models\Employee;
 use App\Notifications\DeviceAssigned;
 use App\Services\AuditService;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Livewire\Component;
 
 class QrScanner extends Component
@@ -24,9 +24,9 @@ class QrScanner extends Component
 
     public $showAssignForm = false;
 
-    public $users = [];
+    public $employees = [];
 
-    public $selectedUser = '';
+    public $selectedEmployeeId = '';
 
     public $assignmentType = 'asignacion_fija';
 
@@ -36,14 +36,33 @@ class QrScanner extends Component
 
     public function mount(): void
     {
-        $this->loadUsers();
+        $this->loadEmployees();
     }
 
-    public function loadUsers(): void
+    public function loadEmployees(): void
     {
-        $this->users = Cache::remember('active_users_list', 3600, function () {
-            return User::orderBy('name')->get();
-        });
+        $apiKey = config('app.erp_api_key');
+        $erpUrl = config('app.erp_api_url') . '/api/v1/users';
+
+        try {
+            $response = Http::timeout(10)->withHeaders([
+                'X-API-Key' => $apiKey,
+            ])->get($erpUrl);
+            
+            if ($response->successful() && isset($response->json('data'))) {
+                $this->employees = collect($response->json('data'))->map(function ($emp) {
+                    return (object) [
+                        'id' => $emp['id'],
+                        'name' => $emp['name'],
+                        'employee_id' => $emp['employee_id'] ?? null,
+                        'department' => $emp['department'] ?? null,
+                        'position' => $emp['position'] ?? null,
+                    ];
+                })->toArray();
+            }
+        } catch (\Exception $e) {
+            $this->employees = [];
+        }
     }
 
     public function startScanning(): void
@@ -88,29 +107,24 @@ class QrScanner extends Component
         // $this->authorize('accessQrScanner');
 
         $this->validate([
-            'selectedUser' => 'required|exists:users,id',
+            'selectedEmployeeId' => 'required',
             'assignmentType' => 'required|in:asignacion_fija,prestamo_temporal',
             'expectedReturnDate' => 'required_if:assignmentType,prestamo_temporal|nullable|date',
         ]);
 
-        $assignedUser = User::find($this->selectedUser);
+        $employee = collect($this->employees)->firstWhere('id', $this->selectedEmployeeId);
 
         $assignment = Assignment::create([
-            'user_id' => $this->selectedUser,
+            'employee_id' => $this->selectedEmployeeId,
             'device_id' => $this->device->id,
-            'assigned_to' => $assignedUser->name,
+            'assigned_to' => $employee['name'] ?? 'Empleado desconocido',
             'assigned_at' => now(),
-            'notes' => $this->deliveryConditions.($this->assignmentType === 'prestamo_temporal' ? " (Devolución esperada: {$this->expectedReturnDate})" : ''),
+            'notes' => $this->deliveryConditions . ($this->assignmentType === 'prestamo_temporal' ? " (Devolución esperada: {$this->expectedReturnDate})" : ''),
         ]);
 
         $this->device->update(['status' => 'assigned']);
 
-        if ($assignedUser) {
-            $assignment->load('device');
-            $assignedUser->notify(new DeviceAssigned($assignment));
-        }
-
-        AuditService::deviceAssigned($this->device->id, $assignedUser->id, $assignedUser->name);
+        AuditService::deviceAssigned($this->device->id, $this->selectedEmployeeId, $employee['name'] ?? 'Desconocido');
 
         $this->resetScanner();
         $this->message = '¡Equipo asignado correctamente!';
