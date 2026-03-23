@@ -15,7 +15,7 @@
                 <h3 class="mt-2 text-sm font-medium text-slate-300">Escanear Activo</h3>
                 <p class="mt-1 text-sm text-slate-500">Activa la cámara para escanear el código QR.</p>
                 <div class="mt-6">
-                    <button wire:click="startScanning" type="button" class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-cyan-500/30 hover:from-indigo-400 hover:to-cyan-400 transition-all hover:scale-[1.02]">
+                    <button wire:click="startScanning" wire:after="setTimeout(() => window.QrScannerInit && (window.QrScannerInit.initialized = false, window.QrScannerInit.tryStart()), 100)" type="button" class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-cyan-500/30 hover:from-indigo-400 hover:to-cyan-400 transition-all hover:scale-[1.02]">
                         <svg class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         Activar Cámara
                     </button>
@@ -302,14 +302,15 @@
             Livewire.hook('morph', ({ el }) => {
                 if (el.querySelector && el.querySelector('#reader')) {
                     console.log('Reader element found, starting scanner');
-                    setTimeout(() => window.QrScannerInit.tryStart(), 300);
+                    window.QrScannerInit.initialized = false;
+                    setTimeout(() => window.QrScannerInit.tryStart(), 500);
                 }
             });
 
             Livewire.on('scanner-started', () => {
                 console.log('Scanner started event received');
                 window.QrScannerInit.reset();
-                setTimeout(() => window.QrScannerInit.tryStart(), 300);
+                setTimeout(() => window.QrScannerInit.tryStart(), 500);
             });
 
             Livewire.on('auto-scan-next', () => {

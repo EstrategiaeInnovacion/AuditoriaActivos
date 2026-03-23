@@ -199,19 +199,19 @@
 
             {{-- ===================== QR SCANNER MODAL ===================== --}}
             <div x-show="showQrScanner" 
-                 x-init="$el.focus()" 
+                 x-init="$el.focus(); setTimeout(() => { if (window.QrScannerInit) { window.QrScannerInit.initialized = false; window.QrScannerInit.tryStart(); } }, 500)"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
                  tabindex="-1" 
                  role="dialog" 
                  aria-modal="true" 
                  aria-labelledby="qr-scanner-title"
                  style="display: none;" 
                  class="fixed inset-0 z-50 overflow-y-auto" 
-                 x-transition:enter="ease-out duration-300" 
-                 x-transition:enter-start="opacity-0" 
-                 x-transition:enter-end="opacity-100" 
-                 x-transition:leave="ease-in duration-200" 
-                 x-transition:leave-start="opacity-100" 
-                 x-transition:leave-end="opacity-0"
                  @keydown.escape.window="showQrScanner = false">
                 <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                     <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="showQrScanner = false"></div>
