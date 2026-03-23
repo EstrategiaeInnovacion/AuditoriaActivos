@@ -233,7 +233,28 @@
 
             onScanSuccess(decodedText) {
                 console.log('QR Code scanned:', decodedText);
-                const component = Livewire.findByName('qr-scanner');
+                const components = Livewire.all();
+                console.log('All Livewire components:', components);
+                
+                // Find the qr-scanner component by checking all components
+                let component = null;
+                for (const [name, cmp] of Object.entries(components)) {
+                    console.log('Checking component:', name, cmp);
+                    if (name.includes('qr-scanner') || name.includes('QrScanner')) {
+                        component = cmp;
+                        break;
+                    }
+                }
+                
+                // Try by ID in DOM
+                if (!component) {
+                    const qrEl = document.querySelector('[wire\\:id]');
+                    console.log('QR element wire:id:', qrEl?.getAttribute('wire:id'));
+                    if (qrEl) {
+                        component = Livewire.find(qrEl.getAttribute('wire:id'));
+                    }
+                }
+                
                 console.log('Component found:', component);
                 if (component && typeof component.processQr === 'function') {
                     component.processQr(decodedText);
@@ -285,7 +306,23 @@
 
             Livewire.on('auto-scan-next', () => {
                 setTimeout(() => {
-                    const component = Livewire.findByName('qr-scanner');
+                    // Find qr-scanner component
+                    let component = null;
+                    const components = Livewire.all();
+                    for (const [name, cmp] of Object.entries(components)) {
+                        if (name.includes('qr-scanner') || name.includes('QrScanner')) {
+                            component = cmp;
+                            break;
+                        }
+                    }
+                    
+                    if (!component) {
+                        const qrEl = document.querySelector('[wire\\:id]');
+                        if (qrEl) {
+                            component = Livewire.find(qrEl.getAttribute('wire:id'));
+                        }
+                    }
+                    
                     if (component && typeof component.resetScanner === 'function') {
                         component.resetScanner();
                     }
