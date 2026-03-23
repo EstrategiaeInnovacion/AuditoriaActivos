@@ -238,21 +238,29 @@
                 
                 // Find the qr-scanner component by checking all components
                 let component = null;
-                for (const [name, cmp] of Object.entries(components)) {
-                    console.log('Checking component:', name, cmp);
-                    if (name.includes('qr-scanner') || name.includes('QrScanner')) {
-                        component = cmp;
-                        break;
+                
+                // Method 1: Find by element class in DOM
+                const scannerEl = document.querySelector('.max-w-md.mx-auto.p-4');
+                if (scannerEl) {
+                    const wireId = scannerEl.getAttribute('wire:id');
+                    console.log('Scanner element wire:id:', wireId);
+                    component = Livewire.find(wireId);
+                }
+                
+                // Method 2: Check all components by ID pattern
+                if (!component) {
+                    for (const [id, cmp] of Object.entries(components)) {
+                        console.log('Checking component:', id, cmp);
+                        if (id && (id.includes('qr') || id.includes('scanner') || id.includes('QrScanner'))) {
+                            component = cmp;
+                            break;
+                        }
                     }
                 }
                 
-                // Try by ID in DOM
-                if (!component) {
-                    const qrEl = document.querySelector('[wire\\:id]');
-                    console.log('QR element wire:id:', qrEl?.getAttribute('wire:id'));
-                    if (qrEl) {
-                        component = Livewire.find(qrEl.getAttribute('wire:id'));
-                    }
+                // Method 3: Find by index (last component is usually qr-scanner in modal)
+                if (!component && components.length > 0) {
+                    component = components[components.length - 1];
                 }
                 
                 console.log('Component found:', component);
@@ -306,21 +314,26 @@
 
             Livewire.on('auto-scan-next', () => {
                 setTimeout(() => {
-                    // Find qr-scanner component
                     let component = null;
-                    const components = Livewire.all();
-                    for (const [name, cmp] of Object.entries(components)) {
-                        if (name.includes('qr-scanner') || name.includes('QrScanner')) {
-                            component = cmp;
-                            break;
-                        }
+                    
+                    // Find by element class
+                    const scannerEl = document.querySelector('.max-w-md.mx-auto.p-4');
+                    if (scannerEl) {
+                        component = Livewire.find(scannerEl.getAttribute('wire:id'));
                     }
                     
                     if (!component) {
-                        const qrEl = document.querySelector('[wire\\:id]');
-                        if (qrEl) {
-                            component = Livewire.find(qrEl.getAttribute('wire:id'));
+                        const components = Livewire.all();
+                        for (const [id, cmp] of Object.entries(components)) {
+                            if (id && (id.includes('qr') || id.includes('scanner'))) {
+                                component = cmp;
+                                break;
+                            }
                         }
+                    }
+                    
+                    if (!component && components.length > 0) {
+                        component = components[components.length - 1];
                     }
                     
                     if (component && typeof component.resetScanner === 'function') {
