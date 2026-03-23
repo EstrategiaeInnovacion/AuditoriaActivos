@@ -11,6 +11,7 @@ class Assignment extends Model
     protected $fillable = [
         'device_id',
         'user_id',
+        'employee_id',
         'assigned_to',
         'assigned_at',
         'returned_at',
@@ -30,5 +31,10 @@ class Assignment extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
     }
 }
