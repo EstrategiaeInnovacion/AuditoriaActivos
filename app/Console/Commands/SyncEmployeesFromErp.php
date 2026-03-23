@@ -21,7 +21,7 @@ class SyncEmployeesFromErp extends Command
         try {
             $response = Http::timeout(30)->withHeaders([
                 'X-API-Key' => $apiKey,
-            ])->get($erpUrl);
+            ])->acceptJson()->get($erpUrl);
 
             if (!$response->successful()) {
                 $this->error('Error al conectar con el ERP: ' . $response->status());
