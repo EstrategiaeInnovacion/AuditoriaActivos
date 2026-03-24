@@ -47,7 +47,7 @@ class DeviceService
             'available' => (clone $query)->where('status', DeviceStatus::Available->value)->count(),
             'assigned' => (clone $query)->where('status', DeviceStatus::Assigned->value)->count(),
             'maintenance' => (clone $query)->where('status', DeviceStatus::Maintenance->value)->count(),
-            'broken' => (clone $query)->where('status', DeviceStatus::Broken->value)->count(),
+            'broken' => Device::query()->where('status', DeviceStatus::Broken->value)->count(),
         ];
     }
 
