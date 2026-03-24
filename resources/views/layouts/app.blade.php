@@ -94,6 +94,14 @@
         <div class="min-h-screen bg-slate-950 text-white">
             <livewire:layout.navigation />
 
+            @isset($header)
+                <header class="glass border-b border-slate-800/50">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endisset
+
             <main id="main-content">
                 {{ $slot }}
             </main>
