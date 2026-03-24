@@ -267,24 +267,20 @@ class AssignedDevicesApiTest extends TestCase
         $this->assertEquals([DeviceType::Computer->value, DeviceType::Peripheral->value], $types);
     }
 
-    public function test_all_devices_includes_unassigned_devices(): void
+    public function test_all_devices_excludes_non_available_devices(): void
     {
-        $assigned = Device::factory()->computer()->assigned()->create();
-        $unassigned = Device::factory()->peripheral()->create();
-
-        Assignment::factory()->create([
-            'device_id' => $assigned->id,
-            'assigned_to' => 'Alguien',
-        ]);
+        $available = Device::factory()->computer()->create(['status' => DeviceStatus::Available->value]);
+        Device::factory()->peripheral()->create(['status' => DeviceStatus::Maintenance->value]);
+        Device::factory()->computer()->assigned()->create();
+        Device::factory()->computer()->create(['status' => DeviceStatus::Broken->value]);
 
         $response = $this->getJson('/api/v1/devices', $this->apiHeaders());
 
         $response->assertOk()
-            ->assertJsonPath('total', 2);
+            ->assertJsonPath('total', 1);
 
         $uuids = collect($response->json('data'))->pluck('uuid')->all();
-        $this->assertContains($assigned->uuid, $uuids);
-        $this->assertContains($unassigned->uuid, $uuids);
+        $this->assertContains($available->uuid, $uuids);
     }
 
     public function test_all_devices_shows_null_assignment_for_unassigned(): void
@@ -297,18 +293,13 @@ class AssignedDevicesApiTest extends TestCase
             ->assertJsonPath('data.0.assignment', null);
     }
 
-    public function test_all_devices_shows_assignment_info_when_assigned(): void
+    public function test_all_devices_response_structure_is_correct(): void
     {
-        $device = Device::factory()->computer()->assigned()->create();
-        Assignment::factory()->create([
-            'device_id' => $device->id,
-            'assigned_to' => 'Pedro Ramírez',
-        ]);
+        Device::factory()->computer()->create(['status' => DeviceStatus::Available->value]);
 
         $response = $this->getJson('/api/v1/devices', $this->apiHeaders());
 
         $response->assertOk()
-            ->assertJsonPath('data.0.assignment.assigned_to', 'Pedro Ramírez')
             ->assertJsonStructure([
                 'data' => [
                     '*' => [

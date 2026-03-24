@@ -122,6 +122,7 @@ class AssignedDevicesController extends Controller
     {
         $devices = Device::query()
             ->whereIn('type', [DeviceType::Computer->value, DeviceType::Peripheral->value])
+            ->where('status', DeviceStatus::Available->value)
             ->with(['photos', 'currentAssignment.employee'])
             ->get();
 
