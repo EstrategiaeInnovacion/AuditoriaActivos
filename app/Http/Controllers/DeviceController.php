@@ -33,6 +33,16 @@ class DeviceController extends Controller
         return view('devices.index', compact('devices', 'stats'));
     }
 
+    public function brokenIndex(Request $request)
+    {
+        Gate::authorize('viewAny', Device::class);
+
+        $devices = $this->deviceService->getBrokenDevices($request);
+        $total = $devices->total();
+
+        return view('devices.broken', compact('devices', 'total'));
+    }
+
     public function create()
     {
         Gate::authorize('create', Device::class);

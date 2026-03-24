@@ -17,6 +17,7 @@ class DeviceService
     public function getDevicesPaginated(Request $request): LengthAwarePaginator
     {
         $query = Device::query()
+            ->where('status', '!=', DeviceStatus::Broken->value)
             ->search($request->search)
             ->type($request->type)
             ->status($request->status)
@@ -36,6 +37,7 @@ class DeviceService
     public function getDeviceStats(Request $request): array
     {
         $query = Device::query()
+            ->where('status', '!=', DeviceStatus::Broken->value)
             ->search($request->search)
             ->type($request->type)
             ->status($request->status);
@@ -96,6 +98,17 @@ class DeviceService
         $device->delete();
 
         return true;
+    }
+
+    public function getBrokenDevices(Request $request): LengthAwarePaginator
+    {
+        return Device::query()
+            ->where('status', DeviceStatus::Broken->value)
+            ->search($request->search)
+            ->type($request->type)
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
     }
 
     public function getDeviceForEdit(Device $device): Device
