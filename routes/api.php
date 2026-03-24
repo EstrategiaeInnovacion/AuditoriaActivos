@@ -1,11 +1,18 @@
 <?php
 
+use App\Http\Controllers\Api\AssignedDevicesController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('api.key')->prefix('v1')->group(function () {
+    Route::get('/device-types', [AssignedDevicesController::class, 'deviceTypes']);
+    Route::get('/devices', [AssignedDevicesController::class, 'allDevices']);
+    Route::post('/devices/{uuid}/assign', [AssignedDevicesController::class, 'assignDevice']);
+    Route::get('/assigned-devices/{username}', [AssignedDevicesController::class, 'assignedDevices']);
+    Route::get('/device-photos/{photo}', [AssignedDevicesController::class, 'showPhoto']);
+
     Route::get('/users', function () {
-        $erpUrl = config('app.erp_api_url') . '/api/v1/users';
+        $erpUrl = config('app.erp_api_url').'/api/v1/users';
         $erpApiKey = config('app.erp_api_key');
 
         try {
@@ -15,6 +22,7 @@ Route::middleware('api.key')->prefix('v1')->group(function () {
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return response()->json([
                     'success' => true,
                     'data' => $data['data'] ?? [],
@@ -24,12 +32,12 @@ Route::middleware('api.key')->prefix('v1')->group(function () {
 
             return response()->json([
                 'success' => false,
-                'error' => 'Failed to connect to ERP: ' . $response->status(),
+                'error' => 'Failed to connect to ERP: '.$response->status(),
             ], 502);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Connection error: ' . $e->getMessage(),
+                'error' => 'Connection error: '.$e->getMessage(),
             ], 503);
         }
     });
