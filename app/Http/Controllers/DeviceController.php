@@ -200,6 +200,16 @@ class DeviceController extends Controller
         return view('devices.print-multiple-qrs', compact('devicesWithQr'));
     }
 
+    public function exportBrokenExcel(Request $request)
+    {
+        return $this->exportService->exportBrokenExcel($request);
+    }
+
+    public function exportBrokenPdf(Request $request)
+    {
+        return $this->exportService->downloadBrokenPdf($request);
+    }
+
     public function exportExcel(Request $request)
     {
         $includeCredentials = $request->has('include_credentials');

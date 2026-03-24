@@ -21,6 +21,8 @@ Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
     // Exports (must be before resource to avoid route conflict)
     Route::get('export/devices/excel', [DeviceController::class, 'exportExcel'])->middleware('throttle:10,1')->name('devices.export.excel');
     Route::get('export/devices/pdf', [DeviceController::class, 'exportPdf'])->middleware('throttle:10,1')->name('devices.export.pdf');
+    Route::get('export/devices/broken/excel', [DeviceController::class, 'exportBrokenExcel'])->middleware('throttle:10,1')->name('devices.broken.export.excel');
+    Route::get('export/devices/broken/pdf', [DeviceController::class, 'exportBrokenPdf'])->middleware('throttle:10,1')->name('devices.broken.export.pdf');
     Route::get('devices/print-multiple-qrs', [DeviceController::class, 'printMultipleQrs'])->name('devices.print-multiple-qrs');
     Route::get('devices/broken', [DeviceController::class, 'brokenIndex'])->name('devices.broken');
 

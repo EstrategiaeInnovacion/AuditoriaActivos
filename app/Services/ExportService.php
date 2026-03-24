@@ -15,6 +15,35 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportService
 {
+    public function exportBrokenExcel(Request $request): StreamedResponse
+    {
+        return Excel::download(
+            new DeviceExport(
+                $request->input('search'),
+                $request->input('type'),
+                'broken'
+            ),
+            'activos-averiados-'.now()->format('Y-m-d').'.xlsx'
+        );
+    }
+
+    public function exportBrokenPdf(Request $request): \Barryvdh\DomPDF\PDF
+    {
+        $brokenRequest = clone $request;
+        $brokenRequest->merge(['status' => 'broken']);
+
+        $devices = $this->buildDeviceQuery($brokenRequest)->take(1000)->get();
+        $includeCredentials = false;
+
+        return Pdf::loadView('exports.devices-pdf', compact('devices', 'includeCredentials'))
+            ->setPaper('letter', 'landscape');
+    }
+
+    public function downloadBrokenPdf(Request $request): BinaryFileResponse
+    {
+        return $this->exportBrokenPdf($request)->download('activos-averiados-'.now()->format('Y-m-d').'.pdf');
+    }
+
     public function exportExcel(Request $request): StreamedResponse
     {
         return Excel::download(
