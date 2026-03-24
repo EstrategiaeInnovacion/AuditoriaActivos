@@ -8,9 +8,9 @@ use App\Models\Device;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportService
@@ -39,7 +39,7 @@ class ExportService
             ->setPaper('letter', 'landscape');
     }
 
-    public function downloadBrokenPdf(Request $request): BinaryFileResponse
+    public function downloadBrokenPdf(Request $request): Response
     {
         return $this->exportBrokenPdf($request)->download('activos-averiados-'.now()->format('Y-m-d').'.pdf');
     }
@@ -72,7 +72,7 @@ class ExportService
             ->setPaper('letter', 'landscape');
     }
 
-    public function downloadPdf(Request $request): BinaryFileResponse
+    public function downloadPdf(Request $request): Response
     {
         $pdf = $this->exportPdf($request);
 

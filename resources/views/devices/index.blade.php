@@ -8,18 +8,6 @@
                 <p class="text-xs text-slate-400 mt-1">Administra y controla el inventario de hardware</p>
             </div>
             <div class="flex items-center gap-2">
-                <a href="{{ route('devices.export.excel') }}" class="inline-flex items-center px-3 py-2 glass-light text-slate-300 text-xs font-medium rounded-xl hover:text-white hover:bg-slate-700/50 transition-all border border-slate-700/50">
-                    <svg class="w-4 h-4 mr-1.5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    Excel
-                </a>
-                <a href="{{ route('devices.export.pdf') }}" class="inline-flex items-center px-3 py-2 glass-light text-red-300 text-xs font-medium rounded-xl hover:text-red-200 hover:bg-red-500/10 transition-all border border-red-500/30">
-                    <svg class="w-4 h-4 mr-1.5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                    PDF
-                </a>
-                <a href="{{ route('devices.broken') }}" class="inline-flex items-center px-3 py-2 glass-light text-orange-300 text-xs font-medium rounded-xl hover:text-orange-200 hover:bg-orange-500/10 transition-all border border-orange-500/30">
-                    <svg class="w-4 h-4 mr-1.5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    Averiados
-                </a>
                 <a href="{{ route('devices.create') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-xl hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all">
                     <svg class="w-4 h-4 mr-1.5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Nuevo Activo
@@ -80,7 +68,7 @@
                     </div>
                     <p class="text-3xl font-bold text-white">{{ $stats['maintenance'] }}</p>
                 </div>
-                <div class="metric-card p-5 rounded-2xl card-hover border-l-4 border-l-red-500">
+                <a href="{{ route('devices.broken') }}" class="metric-card p-5 rounded-2xl card-hover border-l-4 border-l-red-500 block">
                     <div class="flex items-center gap-3 mb-2">
                         <div class="p-2 rounded-xl bg-red-500/20">
                             <svg class="w-5 h-5 text-red-400" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -88,7 +76,7 @@
                         <span class="text-slate-400 text-sm font-medium">Dañados</span>
                     </div>
                     <p class="text-3xl font-bold text-white">{{ $stats['broken'] }}</p>
-                </div>
+                </a>
             </div>
 
             {{-- QR Selection Bar --}}
