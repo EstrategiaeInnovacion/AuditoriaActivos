@@ -172,7 +172,7 @@ class QrScanner extends Component
     public function resetScanner(): void
     {
         $quickMode = $this->quickMode;
-        $this->reset(['scannedCode', 'device', 'message', 'showAssignForm', 'selectedUser', 'assignmentType', 'expectedReturnDate', 'deliveryConditions']);
+        $this->reset(['scannedCode', 'device', 'message', 'showAssignForm', 'selectedEmployeeId', 'assignmentType', 'expectedReturnDate', 'deliveryConditions']);
         $this->quickMode = $quickMode;
     }
 
