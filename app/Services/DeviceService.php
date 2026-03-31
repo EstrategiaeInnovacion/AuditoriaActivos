@@ -7,9 +7,13 @@ use App\Events\DeviceCreated;
 use App\Events\DeviceStatusChanged;
 use App\Models\Credential;
 use App\Models\Device;
+use App\Models\DeviceDocument;
+use App\Models\DevicePhoto;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class DeviceService
@@ -89,15 +93,29 @@ class DeviceService
 
     public function deleteDevice(Device $device): bool
     {
-        if ($device->assignments()->whereNull('returned_at')->exists()) {
-            return false;
-        }
+        return DB::transaction(function () use ($device): bool {
+            if ($device->assignments()->whereNull('returned_at')->exists()) {
+                Log::warning('Attempted to delete device with active assignments', [
+                    'device_id' => $device->id,
+                    'device_name' => $device->name,
+                ]);
+                throw new \RuntimeException('No se puede eliminar un dispositivo con asignaciones activas.');
+            }
 
-        $this->deleteAllPhotos($device);
-        $device->credential()?->delete();
-        $device->delete();
+            $this->deleteAllPhotos($device);
+            $this->deleteAllDocuments($device);
+            $device->credential()?->delete();
 
-        return true;
+            Log::info('Device deleted', [
+                'device_id' => $device->id,
+                'device_name' => $device->name,
+                'deleted_by' => auth()->id(),
+            ]);
+
+            $device->delete();
+
+            return true;
+        });
     }
 
     public function getBrokenDevices(Request $request): LengthAwarePaginator
@@ -125,13 +143,35 @@ class DeviceService
 
     public function processPhotosUpload(Device $device, array $files): void
     {
+        $maxSize = 20 * 1024 * 1024;
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
         foreach ($files as $photo) {
+            $this->validatePhotoUpload($photo, $maxSize, $allowedMimes);
+
             $path = $photo->store('device-photos/'.$device->id, 'private');
 
             $device->photos()->create([
                 'file_path' => $path,
                 'uploaded_by' => auth()->id(),
             ]);
+
+            Log::info('Photo uploaded for device', [
+                'device_id' => $device->id,
+                'file_path' => $path,
+                'uploaded_by' => auth()->id(),
+            ]);
+        }
+    }
+
+    public function validatePhotoUpload($file, int $maxSize, array $allowedMimes): void
+    {
+        if ($file->getSize() > $maxSize) {
+            throw new \InvalidArgumentException('El archivo excede el tamaño máximo permitido de 20MB.');
+        }
+
+        if (! in_array($file->getMimeType(), $allowedMimes)) {
+            throw new \InvalidArgumentException('Tipo de archivo no permitido. Solo se aceptan: JPEG, PNG, GIF, WebP.');
         }
     }
 
@@ -183,6 +223,15 @@ class DeviceService
         foreach ($device->photos as $photo) {
             Storage::disk('private')->delete($photo->file_path);
         }
+        DevicePhoto::where('device_id', $device->id)->delete();
+    }
+
+    protected function deleteAllDocuments(Device $device): void
+    {
+        foreach ($device->documents as $document) {
+            Storage::disk('private')->delete($document->file_path);
+        }
+        DeviceDocument::where('device_id', $device->id)->delete();
     }
 
     public function getDevicesForQrPrint(array $ids): Collection

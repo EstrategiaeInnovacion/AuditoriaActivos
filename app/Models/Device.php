@@ -97,4 +97,15 @@ class Device extends Model
 
         return $query->where('type', $type);
     }
+
+    public function scopeWarrantyExpiring(Builder $query, int $days = 30): Builder
+    {
+        return $query->whereNotNull('warranty_expiration')
+            ->whereBetween('warranty_expiration', [now(), now()->addDays($days)]);
+    }
+
+    public function scopeWithCurrentAssignment(Builder $query): Builder
+    {
+        return $query->with('currentAssignment.user');
+    }
 }

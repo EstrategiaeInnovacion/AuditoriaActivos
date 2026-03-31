@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-6" x-data="{ showQrScanner: false }">
+    <div class="py-6" x-data="{ showQrScanner: false, loading: false }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             {{-- ===================== HEADER ACTIONS ===================== --}}
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -14,6 +14,13 @@
                     <p class="text-slate-400 text-sm mt-1">Resumen general del inventario tecnológico institucional.</p>
                 </div>
                 <div class="flex gap-3">
+                    <button @click="loading = true; $wire.refresh().then(() => loading = false)" :disabled="loading" class="flex items-center justify-center gap-2 rounded-xl h-11 px-4 glass-light text-slate-300 text-sm font-semibold hover:text-white hover:bg-slate-700/50 transition-all border border-slate-700/50 group disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg :class="{'animate-spin': loading}" class="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.001 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span x-show="!loading">Actualizar</span>
+                        <span x-show="loading" class="hidden">Cargando...</span>
+                    </button>
                     @auth
                     <button @click="showQrScanner = true" class="flex items-center justify-center gap-2 rounded-xl h-11 px-5 glass-light text-slate-300 text-sm font-semibold hover:text-white hover:bg-slate-700/50 transition-all border border-slate-700/50 group">
                         <svg class="w-5 h-5 text-emerald-400 group-hover:text-emerald-300 transition-colors" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,8 +106,14 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-3xl font-bold text-white">{{ $totalDevices }}</p>
-                        <p class="text-xs text-slate-500 mt-1">En inventario</p>
+                        <p x-show="!loading" class="text-3xl font-bold text-white">{{ $totalDevices ?? 0 }}</p>
+                        <div x-show="loading" class="animate-pulse">
+                            <div class="h-8 bg-slate-700 rounded w-16"></div>
+                        </div>
+                        <p x-show="!loading" class="text-xs text-slate-500 mt-1">En inventario</p>
+                        <div x-show="loading" class="animate-pulse mt-1">
+                            <div class="h-3 bg-slate-700 rounded w-20"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -112,8 +125,14 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-3xl font-bold text-white">{{ $availableDevices }}</p>
-                        <p class="text-xs text-slate-500 mt-1">Listo para asignar</p>
+                        <p x-show="!loading" class="text-3xl font-bold text-white">{{ $availableDevices ?? 0 }}</p>
+                        <div x-show="loading" class="animate-pulse">
+                            <div class="h-8 bg-slate-700 rounded w-16"></div>
+                        </div>
+                        <p x-show="!loading" class="text-xs text-slate-500 mt-1">Listo para asignar</p>
+                        <div x-show="loading" class="animate-pulse mt-1">
+                            <div class="h-3 bg-slate-700 rounded w-24"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -125,8 +144,14 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-3xl font-bold text-white">{{ $assignedDevices }}</p>
-                        <p class="text-xs text-slate-500 mt-1">En uso actualmente</p>
+                        <p x-show="!loading" class="text-3xl font-bold text-white">{{ $assignedDevices ?? 0 }}</p>
+                        <div x-show="loading" class="animate-pulse">
+                            <div class="h-8 bg-slate-700 rounded w-16"></div>
+                        </div>
+                        <p x-show="!loading" class="text-xs text-slate-500 mt-1">En uso actualmente</p>
+                        <div x-show="loading" class="animate-pulse mt-1">
+                            <div class="h-3 bg-slate-700 rounded w-28"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -138,8 +163,14 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-3xl font-bold text-white">{{ $maintenanceDevices }}</p>
-                        <p class="text-xs text-slate-500 mt-1">Servicio técnico</p>
+                        <p x-show="!loading" class="text-3xl font-bold text-white">{{ $maintenanceDevices ?? 0 }}</p>
+                        <div x-show="loading" class="animate-pulse">
+                            <div class="h-8 bg-slate-700 rounded w-16"></div>
+                        </div>
+                        <p x-show="!loading" class="text-xs text-slate-500 mt-1">Servicio técnico</p>
+                        <div x-show="loading" class="animate-pulse mt-1">
+                            <div class="h-3 bg-slate-700 rounded w-24"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -151,8 +182,14 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-3xl font-bold text-white">{{ $brokenDevices }}</p>
-                        <p class="text-xs text-slate-500 mt-1">Pendiente</p>
+                        <p x-show="!loading" class="text-3xl font-bold text-white">{{ $brokenDevices ?? 0 }}</p>
+                        <div x-show="loading" class="animate-pulse">
+                            <div class="h-8 bg-slate-700 rounded w-16"></div>
+                        </div>
+                        <p x-show="!loading" class="text-xs text-slate-500 mt-1">Pendiente</p>
+                        <div x-show="loading" class="animate-pulse mt-1">
+                            <div class="h-3 bg-slate-700 rounded w-20"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -166,7 +203,7 @@
                 <div class="space-y-6 order-1 lg:order-2">
                     <livewire:dashboard-chart />
 
-                    @if($monthlyTrend->count())
+                    @if(!empty($monthlyTrend))
                     <div class="glass-light rounded-2xl p-6 card-hover">
                         <div class="flex items-center justify-between mb-6">
                             <div>
@@ -178,7 +215,7 @@
                             </div>
                         </div>
                         <div class="h-32 flex items-end gap-2 px-2">
-                            @php $maxTrend = $monthlyTrend->max() ?: 1; @endphp
+                            @php $maxTrend = max(array_values($monthlyTrend)) ?: 1; @endphp
                             @foreach($monthlyTrend as $month => $count)
                             <div class="flex-1 flex flex-col items-center gap-2">
                                 <div class="w-full bg-gradient-to-t from-indigo-600 to-purple-600 rounded-t-lg group relative hover:from-indigo-500 hover:to-purple-500 transition-all" style="height: {{ intval(($count / $maxTrend) * 100) }}%">
@@ -188,7 +225,7 @@
                             @endforeach
                         </div>
                         <div class="flex justify-between mt-3 px-2 text-xs font-medium text-slate-400">
-                            @foreach($monthlyTrend->keys() as $month)
+                            @foreach(array_keys($monthlyTrend) as $month)
                             <span class="uppercase">{{ substr($month, -2) }}</span>
                             @endforeach
                         </div>

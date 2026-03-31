@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Assignment extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
+    use HasFactory;
 
     protected $fillable = [
         'device_id',
@@ -36,5 +38,16 @@ class Assignment extends Model
     public function employee()
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereNull('returned_at');
+    }
+
+    public function scopeOverdue(Builder $query, int $days = 30): Builder
+    {
+        return $query->active()
+            ->where('assigned_at', '<', now()->subDays($days));
     }
 }

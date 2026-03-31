@@ -15,15 +15,41 @@
                 <h3 class="mt-2 text-sm font-medium text-slate-300">Escanear Activo</h3>
                 <p class="mt-1 text-sm text-slate-500">Activa la cámara para escanear el código QR.</p>
                 <div class="mt-6">
-                    <button wire:click="startScanning" wire:after="setTimeout(() => window.QrScannerInit && (window.QrScannerInit.initialized = false, window.QrScannerInit.tryStart()), 100)" type="button" class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-cyan-500/30 hover:from-indigo-400 hover:to-cyan-400 transition-all hover:scale-[1.02]">
+                    <button 
+                        wire:click="startScanning" 
+                        type="button" 
+                        class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-cyan-500/30 hover:from-indigo-400 hover:to-cyan-400 transition-all hover:scale-[1.02]"
+                        id="start-scanner-btn"
+                    >
                         <svg class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         Activar Cámara
                     </button>
                 </div>
             </div>
         @else
-            <div class="w-full glass rounded-2xl shadow-xl overflow-hidden relative">
+            <div class="w-full glass rounded-2xl shadow-xl overflow-hidden relative" id="scanner-container">
                 <div id="reader" class="w-full h-auto" wire:ignore></div>
+                
+                <div id="scanner-loading" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center z-10 hidden">
+                    <svg class="animate-spin h-10 w-10 text-indigo-500 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-slate-300 text-sm font-medium">Inicializando cámara...</span>
+                </div>
+                
+                <div id="scanner-error" class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center z-10 hidden">
+                    <svg class="h-12 w-12 text-red-500 mb-3" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <p id="scanner-error-message" class="text-slate-300 text-sm font-medium text-center px-4 mb-4"></p>
+                    <button 
+                        onclick="window.QrScannerInit?.retry()" 
+                        class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                        Reintentar
+                    </button>
+                </div>
             </div>
             <p class="mt-4 text-sm text-slate-500 text-center">Apunta la cámara al código QR.</p>
         @endif
@@ -181,171 +207,337 @@
 
     @push('scripts')
     <script>
-        window.QrScannerInit = window.QrScannerInit || {
-            initialized: false,
-            scanner: null,
-
-            startScanner() {
-                const readerEl = document.getElementById('reader');
-                console.log('startScanner called, readerEl:', readerEl);
-                if (!readerEl) {
-                    console.log('Reader element not found');
-                    return false;
+        (function() {
+            'use strict';
+            
+            const MAX_RETRIES = 5;
+            const RETRY_DELAY = 500;
+            const SCANNER_COMPONENT_NAME = 'qr-scanner';
+            
+            function showLoading(show = true) {
+                const loadingEl = document.getElementById('scanner-loading');
+                if (loadingEl) {
+                    loadingEl.classList.toggle('hidden', !show);
+                }
+            }
+            
+            function showError(message = 'Error desconocido') {
+                const errorEl = document.getElementById('scanner-error');
+                const messageEl = document.getElementById('scanner-error-message');
+                if (errorEl && messageEl) {
+                    messageEl.textContent = message;
+                    errorEl.classList.remove('hidden');
+                }
+            }
+            
+            function hideError() {
+                const errorEl = document.getElementById('scanner-error');
+                if (errorEl) {
+                    errorEl.classList.add('hidden');
+                }
+            }
+            
+            function getCameraErrorMessage(error) {
+                if (!error) return 'Error desconocido al acceder a la cámara.';
+                
+                const errorName = error.name || (typeof error === 'string' ? error : 'UnknownError');
+                
+                const errorMap = {
+                    'NotAllowedError': 'Permiso denegado. Por favor permite el acceso a la cámara en la configuración del navegador.',
+                    'PermissionDeniedError': 'Permiso denegado. Por favor permite el acceso a la cámara en la configuración del navegador.',
+                    'NotFoundError': 'No se encontró ninguna cámara. Verifica que tu dispositivo tenga una cámara conectada.',
+                    'DevicesNotFoundError': 'No se encontró ninguna cámara. Verifica que tu dispositivo tenga una cámara conectada.',
+                    'NotReadableError': 'La cámara está siendo utilizada por otra aplicación. Cierra otras apps que usen la cámara e intenta de nuevo.',
+                    'TrackStartError': 'La cámara está siendo utilizada por otra aplicación. Cierra otras apps que usen la cámara e intenta de nuevo.',
+                    'NotSupportedError': 'El acceso a la cámara no está soportado en este contexto (HTTP sin SSL).',
+                    'SecurityError': 'El acceso a la cámara fue bloqueado por razones de seguridad. Asegúrate de usar HTTPS.',
+                    'ContainerNotFound': 'Contenedor del scanner no encontrado.',
+                    'LibraryNotLoaded': 'La librería del scanner no se cargó correctamente.'
+                };
+                
+                return errorMap[errorName] || error.message || `Error: ${errorName}`;
+            }
+            
+            function checkCameraSupport() {
+                if (!navigator.mediaDevices) {
+                    return {
+                        supported: false,
+                        error: 'Tu navegador no soporta acceso a dispositivos multimedia. Actualiza a una versión moderna.'
+                    };
                 }
                 
-                if (typeof Html5QrcodeScanner === 'undefined') {
-                    console.log('Html5QrcodeScanner not loaded yet');
-                    setTimeout(() => this.startScanner(), 100);
-                    return false;
+                if (!navigator.mediaDevices.getUserMedia) {
+                    return {
+                        supported: false,
+                        error: 'Tu navegador no soporta la API getUserMedia necesaria para acceder a la cámara.'
+                    };
                 }
                 
-                if (this.scanner) {
-                    console.log('Scanner already initialized');
-                    return true;
-                }
-
+                return { supported: true, error: null };
+            }
+            
+            function findQrScannerComponent() {
                 try {
-                    console.log('Initializing Html5QrcodeScanner');
-                    this.scanner = new Html5QrcodeScanner(
-                        "reader", 
-                        { fps: 10, qrbox: {width: 250, height: 250} },
-                        false
-                    );
-                    
-                    this.scanner.render(this.onScanSuccess.bind(this), this.onScanFailure.bind(this));
-                    console.log('Scanner rendered successfully');
-                    return true;
-                } catch (e) {
-                    console.error("Error al iniciar el scanner:", e);
-                    return false;
-                }
-            },
-
-            stopScanner() {
-                if (this.scanner) {
-                    this.scanner.clear().then(() => {
-                        this.scanner = null;
-                    }).catch(() => {
-                        this.scanner = null;
-                    });
-                }
-            },
-
-            onScanSuccess(decodedText) {
-                console.log('QR Code scanned:', decodedText);
-                const components = Livewire.all();
-                console.log('All Livewire components:', components);
-                
-                // Find the qr-scanner component by checking all components
-                let component = null;
-                
-                // Method 1: Find by element class in DOM
-                const scannerEl = document.querySelector('.max-w-md.mx-auto.p-4');
-                if (scannerEl) {
-                    const wireId = scannerEl.getAttribute('wire:id');
-                    console.log('Scanner element wire:id:', wireId);
-                    component = Livewire.find(wireId);
-                }
-                
-                // Method 2: Check all components by ID pattern
-                if (!component) {
-                    for (const [id, cmp] of Object.entries(components)) {
-                        console.log('Checking component:', id, cmp);
-                        if (id && (id.includes('qr') || id.includes('scanner') || id.includes('QrScanner'))) {
-                            component = cmp;
-                            break;
+                    if (typeof Livewire !== 'undefined' && typeof Livewire.getByName === 'function') {
+                        const component = Livewire.getByName(SCANNER_COMPONENT_NAME);
+                        if (component) {
+                            console.log('Found component via Livewire.getByName:', component);
+                            return component;
                         }
                     }
+                } catch (e) {
+                    console.warn('Error finding component by name:', e);
                 }
                 
-                // Method 3: Find by index (last component is usually qr-scanner in modal)
-                if (!component && components.length > 0) {
-                    component = components[components.length - 1];
-                }
-                
-                console.log('Component found:', component);
-                if (component && typeof component.processQr === 'function') {
-                    component.processQr(decodedText);
-                } else {
-                    console.error('processQr method not found on component');
-                }
-                this.stopScanner();
-            },
-
-            onScanFailure(error) {},
-
-            tryStart() {
-                console.log('tryStart called, initialized:', this.initialized);
-                if (this.initialized) return;
-                
-                const started = this.startScanner();
-                console.log('startScanner result:', started);
-                
-                if (!started && typeof Html5QrcodeScanner !== 'undefined') {
-                    console.log('Retrying startScanner...');
-                    setTimeout(() => this.tryStart(), 100);
-                }
-                this.initialized = true;
-            },
-
-            reset() {
-                this.stopScanner();
-                this.initialized = false;
-            }
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, waiting for user to open scanner');
-        });
-
-        if (typeof Livewire !== 'undefined') {
-            Livewire.hook('morph', ({ el }) => {
-                if (el.querySelector && el.querySelector('#reader')) {
-                    console.log('Reader element found, starting scanner');
-                    window.QrScannerInit.initialized = false;
-                    setTimeout(() => window.QrScannerInit.tryStart(), 500);
-                }
-            });
-
-            Livewire.on('scanner-started', () => {
-                console.log('Scanner started event received');
-                window.QrScannerInit.reset();
-                setTimeout(() => window.QrScannerInit.tryStart(), 500);
-            });
-
-            Livewire.on('auto-scan-next', () => {
-                setTimeout(() => {
-                    let component = null;
-                    
-                    // Find by element class
-                    const scannerEl = document.querySelector('.max-w-md.mx-auto.p-4');
-                    if (scannerEl) {
-                        component = Livewire.find(scannerEl.getAttribute('wire:id'));
-                    }
-                    
-                    if (!component) {
-                        const components = Livewire.all();
-                        for (const [id, cmp] of Object.entries(components)) {
-                            if (id && (id.includes('qr') || id.includes('scanner'))) {
-                                component = cmp;
-                                break;
+                try {
+                    if (typeof Livewire !== 'undefined') {
+                        const scannerEl = document.querySelector('[wire\\:id]');
+                        if (scannerEl) {
+                            const wireId = scannerEl.getAttribute('wire:id');
+                            if (wireId && typeof Livewire.find === 'function') {
+                                const component = Livewire.find(wireId);
+                                if (component) {
+                                    console.log('Found component via wire:id:', wireId);
+                                    return component;
+                                }
                             }
                         }
                     }
-                    
-                    if (!component && components.length > 0) {
-                        component = components[components.length - 1];
+                } catch (e) {
+                    console.warn('Error finding component by wire:id:', e);
+                }
+                
+                try {
+                    if (typeof Livewire !== 'undefined' && typeof Livewire.all === 'function') {
+                        const components = Livewire.all();
+                        if (Array.isArray(components)) {
+                            for (const cmp of components) {
+                                const id = cmp?.id || cmp?.__instance?.id || '';
+                                if (id.includes('qr') || id.includes('scanner')) {
+                                    console.log('Found component by ID pattern:', id);
+                                    return cmp;
+                                }
+                            }
+                        } else if (components instanceof Map || typeof components === 'object') {
+                            for (const [id, cmp] of Object.entries(components)) {
+                                if (id.includes('qr') || id.includes('scanner')) {
+                                    console.log('Found component by ID pattern:', id);
+                                    return cmp;
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error finding component by pattern:', e);
+                }
+                
+                return null;
+            }
+            
+            function onScanSuccess(decodedText) {
+                console.log('QR Code scanned:', decodedText);
+                hideError();
+                
+                const component = findQrScannerComponent();
+                
+                if (component && typeof component.processQr === 'function') {
+                    component.processQr(decodedText);
+                } else {
+                    console.warn('processQr method not found, attempting fallback');
+                    try {
+                        if (typeof Livewire !== 'undefined' && typeof Livewire.emit === 'function') {
+                            Livewire.emit('process-qr-code', decodedText);
+                        }
+                    } catch (e) {
+                        console.error('Failed to emit QR code event:', e);
+                    }
+                }
+                
+                window.QrScannerInit?.stopScanner();
+            }
+            
+            function onScanFailure(error, errorContext) {
+                // Silent failure - this is normal when no QR is in view
+            }
+            
+            function onCameraError(error) {
+                console.error('Camera error:', error);
+                showLoading(false);
+                showError(getCameraErrorMessage(error));
+            }
+            
+            function onScannerReady() {
+                console.log('Scanner is ready');
+                showLoading(false);
+                hideError();
+            }
+            
+            window.QrScannerInit = window.QrScannerInit || {
+                initialized: false,
+                scanner: null,
+                retryCount: 0,
+                
+                startScanner() {
+                    const readerEl = document.getElementById('reader');
+                    if (!readerEl) {
+                        console.log('Reader element not found');
+                        onCameraError({ name: 'ContainerNotFound', message: 'Elemento reader no encontrado' });
+                        return false;
                     }
                     
-                    if (component && typeof component.resetScanner === 'function') {
-                        component.resetScanner();
+                    const support = checkCameraSupport();
+                    if (!support.supported) {
+                        onCameraError({ name: 'NotSupported', message: support.error });
+                        return false;
                     }
-                    if (component && typeof component.startScanning === 'function') {
-                        component.startScanning();
+                    
+                    if (typeof Html5QrcodeScanner === 'undefined') {
+                        console.log('Html5QrcodeScanner not loaded yet');
+                        if (this.retryCount < MAX_RETRIES) {
+                            this.retryCount++;
+                            setTimeout(() => this.startScanner(), RETRY_DELAY);
+                        } else {
+                            onCameraError({ name: 'LibraryNotLoaded', message: 'La librería no se cargó' });
+                        }
+                        return false;
                     }
-                }, 1500);
+                    
+                    if (this.scanner) {
+                        console.log('Scanner already initialized');
+                        return true;
+                    }
+                    
+                    try {
+                        showLoading(true);
+                        hideError();
+                        
+                        this.scanner = new Html5QrcodeScanner(
+                            'reader', 
+                            { 
+                                fps: 10, 
+                                qrbox: { width: 250, height: 250 },
+                                showTorchButtonIfSupported: true,
+                                showZoomButtonIfSupported: true
+                            },
+                            false
+                        );
+                        
+                        this.scanner.render(
+                            (decodedText, decodedResult) => {
+                                if (!this.destroyed) {
+                                    onScanSuccess(decodedText);
+                                }
+                            },
+                            (error, errorContext) => {
+                                if (!this.destroyed) {
+                                    onScanFailure(error, errorContext);
+                                }
+                            }
+                        );
+                        
+                        this.initialized = true;
+                        this.retryCount = 0;
+                        onScannerReady();
+                        return true;
+                        
+                    } catch (e) {
+                        console.error('Error initializing scanner:', e);
+                        onCameraError(e);
+                        return false;
+                    }
+                },
+                
+                stopScanner() {
+                    this.destroyed = true;
+                    
+                    if (this.scanner) {
+                        this.scanner.clear()
+                            .then(() => {
+                                this.scanner = null;
+                                this.initialized = false;
+                                showLoading(false);
+                            })
+                            .catch((e) => {
+                                console.error('Error clearing scanner:', e);
+                                this.scanner = null;
+                                this.initialized = false;
+                                showLoading(false);
+                            });
+                    } else {
+                        showLoading(false);
+                    }
+                },
+                
+                retry() {
+                    hideError();
+                    this.retryCount = 0;
+                    this.destroyed = false;
+                    this.startScanner();
+                },
+                
+                reset() {
+                    this.destroyed = false;
+                    this.stopScanner();
+                    this.initialized = false;
+                    this.retryCount = 0;
+                }
+            };
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('QR Scanner script loaded');
             });
-        }
+            
+            if (typeof Livewire !== 'undefined') {
+                Livewire.hook('morph', ({ el }) => {
+                    if (el.querySelector && el.querySelector('#reader')) {
+                        console.log('Reader element appeared in DOM');
+                        if (!window.QrScannerInit?.initialized) {
+                            setTimeout(() => window.QrScannerInit?.startScanner(), 300);
+                        }
+                    }
+                });
+                
+                Livewire.hook('messageProcessed', ({ component, message }) => {
+                    if (component?.name === SCANNER_COMPONENT_NAME || component?.id?.includes('qr')) {
+                        console.log('QR Scanner component updated');
+                    }
+                });
+                
+                Livewire.on('scanner-started', () => {
+                    console.log('Scanner started event received');
+                    window.QrScannerInit?.reset();
+                    setTimeout(() => window.QrScannerInit?.startScanner(), 300);
+                });
+                
+                Livewire.on('scanner-stopped', () => {
+                    console.log('Scanner stopped event received');
+                    window.QrScannerInit?.stopScanner();
+                });
+                
+                Livewire.on('auto-scan-next', () => {
+                    setTimeout(() => {
+                        const component = findQrScannerComponent();
+                        
+                        if (component) {
+                            if (typeof component.resetScanner === 'function') {
+                                component.resetScanner();
+                            }
+                            if (typeof component.startScanning === 'function') {
+                                component.startScanning();
+                            }
+                        }
+                    }, 1500);
+                });
+            }
+            
+            const startBtn = document.getElementById('start-scanner-btn');
+            if (startBtn) {
+                startBtn.addEventListener('click', () => {
+                    window.QrScannerInit?.reset();
+                });
+            }
+            
+        })();
     </script>
     @endpush
 </div>
